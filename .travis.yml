@@ -1,0 +1,20 @@
+language: python
+
+env:
+  - TOX_ENV=lint
+  - TOX_ENV=py26
+  - TOX_ENV=py27
+  - TOX_ENV=pypy
+
+script: tox -e $TOX_ENV
+
+after_success:
+    - if [[ "${TOX_ENV:0:2}" == 'py' ]]; then coveralls; fi
+
+notifications:
+  irc:
+    channels: "irc.freenode.net#cryptography-dev"
+    template:
+      - "%{repository}@%{branch} - %{author}: %{message} (%{build_url})"
+    use_notice: true
+    skip_join: true
