@@ -12,10 +12,10 @@ env:
         - TOX_ENV=py3pep8
 
 install:
-    pip install coveralls coverage tox
+    - pip install coveralls coverage tox
 
 script:
-    tox -e $TOX_ENV
+    - tox -e $TOX_ENV
 
 after_success:
     - coveralls
