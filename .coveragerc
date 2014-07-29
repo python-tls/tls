@@ -3,5 +3,3 @@ branch = True
 
 source =
     tls
-
-omit = tls/test/*
