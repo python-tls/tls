@@ -2,12 +2,10 @@
 Tests for the tls.record module.
 """
 
-from unittest import TestCase
-
 from tls.record import parse_tls_plaintext
 
 
-class RecordParsingTests(TestCase):
+class TestRecordParsing(object):
     """
     Tests for parsing of TLS records.
     """
@@ -27,8 +25,8 @@ class RecordParsingTests(TestCase):
         )
         record = parse_tls_plaintext(packet)
         # TODO: actually type should be a "constant" object, not an int.
-        self.assertEqual(record.type, 22)
-        self.assertEqual(record.version.major, 3)
-        self.assertEqual(record.version.minor, 3)
-        self.assertEqual(record.length, 10)
-        self.assertEqual(record.fragment, '0123456789')
+        assert record.type == 22
+        assert record.version.major == 3
+        assert record.version.minor == 3
+        assert record.length == 10
+        assert record.fragment == '0123456789'
