@@ -13,7 +13,7 @@ env:
 script: tox -e $TOX_ENV
 
 after_success:
-    - if [[ "${TOX_ENV:0:2}" == 'py' ]]; then coveralls; fi
+    - coveralls
 
 notifications:
   irc:
