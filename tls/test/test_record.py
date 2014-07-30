@@ -4,6 +4,8 @@ Tests for the tls.record module.
 
 from construct.core import FieldError
 
+import pytest
+
 from tls.record import ContentType, parse_tls_plaintext
 
 
@@ -43,10 +45,9 @@ class TestRecordParsing(object):
             + b'\x00' + b'\n'
             + b'0123456789'
         )
-        try:
+        with pytest.raises(ValueError) as exc_info:
             parse_tls_plaintext(packet)
-        except ValueError as e:
-            assert e.message == "26 is not a valid ContentType"
+        assert exc_info.value.message == "26 is not a valid ContentType"
 
     def test_incomplete_packet(self):
         """
@@ -58,10 +59,9 @@ class TestRecordParsing(object):
             + b'\x00' + b'\n'  # big-endian length
             + b'0123456789'  # fragment
         )
-        try:
+        with pytest.raises(FieldError) as exc_info:
             parse_tls_plaintext(packet)
-        except FieldError as e:
-            assert e.message == "expected 2608, found 9"
+        assert exc_info.value.message == "expected 2608, found 9"
 
     def test_not_enough_data_to_fragment(self):
         """
@@ -74,7 +74,6 @@ class TestRecordParsing(object):
             + b'\x00' + b'\n'  # big-endian length
             + b'12'  # fragment
         )
-        try:
+        with pytest.raises(FieldError) as exc_info:
             parse_tls_plaintext(packet)
-        except FieldError as e:
-            assert e.message == "expected 10, found 2"
+        assert exc_info.value.message == "expected 10, found 2"
