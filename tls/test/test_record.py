@@ -2,7 +2,7 @@
 Tests for the tls.record module.
 """
 
-from tls.record import parse_tls_plaintext
+from tls.record import parse_tls_plaintext, ContentType
 
 
 class TestRecordParsing(object):
@@ -25,7 +25,7 @@ class TestRecordParsing(object):
         )
         record = parse_tls_plaintext(packet)
         # TODO: actually type should be a "constant" object, not an int.
-        assert record.type == 22
+        assert record.type == ContentType.handshake
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.length == 10

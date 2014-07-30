@@ -1,6 +1,7 @@
 from characteristic import attributes
 
 from tls import _constructs
+from enum import Enum
 
 
 @attributes(['major', 'minor'])
@@ -17,6 +18,13 @@ class TLSPlaintext(object):
     """
 
 
+class ContentType(Enum):
+    change_cipher_spec = 20
+    alert = 21
+    handshake = 22
+    application_data = 23
+
+
 def parse_tls_plaintext(bytes):
     """
     Parse a ``TLSPlaintext`` struct.
@@ -26,7 +34,7 @@ def parse_tls_plaintext(bytes):
     """
     construct = _constructs.TLSPlaintext.parse(bytes)
     return TLSPlaintext(
-        type=construct.type,
+        type=ContentType(construct.type),
         version=ProtocolVersion(
             major=construct.version.major,
             minor=construct.version.minor),
