@@ -65,6 +65,7 @@ class TestRecordParsing(object):
 
     def test_not_enough_data_to_fragment(self):
         """
+        Detect insufficient data to fragment.
         """
         packet = (
             b'\x16'  # type
