@@ -29,7 +29,7 @@ class TestRecordParsing(object):
         ).encode("ascii")
         record = parse_tls_plaintext(packet)
 
-        assert record.type == ContentType.handshake
+        assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.length == 10
@@ -47,6 +47,6 @@ class TestRecordParsing(object):
             + '0123456789'
         ).encode("ascii")
         try:
-            record = parse_tls_plaintext(packet)
+            parse_tls_plaintext(packet)
         except ValueError as e:
             assert e.message == "26 is not a valid ContentType"
