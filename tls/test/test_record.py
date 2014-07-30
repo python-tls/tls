@@ -24,7 +24,6 @@ class TestRecordParsing(object):
             + '0123456789' # fragment
         )
         record = parse_tls_plaintext(packet)
-        # TODO: actually type should be a "constant" object, not an int.
         assert record.type == ContentType.handshake
         assert record.version.major == 3
         assert record.version.minor == 3
