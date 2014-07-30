@@ -10,10 +10,6 @@ from tls.record import ContentType, parse_tls_plaintext
 class TestRecordParsing(object):
     """
     Tests for parsing of TLS records.
-
-    TODO: We need:
-    1. an incomplete packet being rejected
-    2. Not enough data to fragment
     """
 
     def test_parse_tls_plaintext_handshake(self):
@@ -66,3 +62,18 @@ class TestRecordParsing(object):
             parse_tls_plaintext(packet)
         except FieldError as e:
             assert e.message == "expected 2608, found 9"
+
+    def test_not_enough_data_to_fragment(self):
+        """
+        """
+        packet = (
+            b'\x16'  # type
+            + b'\x03'  # major version
+            + b'\x03'  # minor version
+            + b'\x00' + b'\n'  # big-endian length
+            + b'12'  # fragment
+        )
+        try:
+            parse_tls_plaintext(packet)
+        except FieldError as e:
+            assert e.message == "expected 10, found 2"
