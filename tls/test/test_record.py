@@ -29,7 +29,7 @@ class TestRecordParsing(object):
             + '0123456789'  # fragment
         ).encode("ascii")
         record = parse_tls_plaintext(packet)
-        assert record.type == ContentType.handshake
+        assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.length == 10

@@ -20,10 +20,10 @@ class TLSPlaintext(object):
 
 
 class ContentType(Enum):
-    change_cipher_spec = 20
-    alert = 21
-    handshake = 22
-    application_data = 23
+    CHANGE_CIPHER_SPEC = 20
+    ALERT = 21
+    HANDSHAKE = 22
+    APPLICATION_DATA = 23
 
 
 def parse_tls_plaintext(bytes):
