@@ -8,6 +8,11 @@ from tls.record import ContentType, parse_tls_plaintext
 class TestRecordParsing(object):
     """
     Tests for parsing of TLS records.
+
+    TODO: We need:
+    1. negative tests for type being wrong
+    2. an incomplete packet being rejected
+    3. Not enough data to fragment
     """
 
     def test_parse_tls_plaintext_handshake(self):
