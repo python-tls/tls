@@ -21,14 +21,13 @@ class TestRecordParsing(object):
         in the TLSPlaintext struct.
         """
         packet = (
-            chr(22)  # type
-            + chr(3)  # major version
-            + chr(3)  # minor version
-            + chr(0) + chr(10)  # big-endian length
-            + '0123456789'  # fragment
-        ).encode("ascii")
+            b'\x16'  # type
+            + b'\x03'  # major version
+            + b'\x03'  # minor version
+            + b'\x00' + b'\n'  # big-endian length
+            + b'0123456789'  # fragment
+        )
         record = parse_tls_plaintext(packet)
-
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
