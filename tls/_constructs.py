@@ -12,4 +12,4 @@ TLSPlaintext = Struct(
     ProtocolVersion,
     UBInt16("length"),
     Bytes("fragment", lambda ctx: ctx.length),
-    )
+)
