@@ -1,7 +1,8 @@
 from characteristic import attributes
 
-from tls import _constructs
 from enum import Enum
+
+from tls import _constructs
 
 
 @attributes(['major', 'minor'])

@@ -1,4 +1,4 @@
-from construct import Struct, UBInt8, UBInt16, Bytes
+from construct import Bytes, Struct, UBInt16, UBInt8
 
 
 ProtocolVersion = Struct(
