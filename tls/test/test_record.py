@@ -39,12 +39,12 @@ class TestRecordParsing(object):
         Raise an error when the type is not one of those defined in ContentType
         """
         packet = (
-            chr(26)  # invalid type
-            + chr(3)
-            + chr(3)
-            + chr(0) + chr(10)
-            + '0123456789'
-        ).encode("ascii")
+            b'\x1a'  # invalid type
+            + b'\x03'
+            + b'\x03'
+            + b'\x00' + b'\n'
+            + b'0123456789'
+        )
         try:
             parse_tls_plaintext(packet)
         except ValueError as e:
