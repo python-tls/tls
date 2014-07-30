@@ -22,10 +22,10 @@ class TestRecordParsing(object):
             + chr(3) # minor version
             + chr(0) + chr(10) # big-endian length
             + '0123456789' # fragment
-        )
+        ).encode("ascii")
         record = parse_tls_plaintext(packet)
         assert record.type == ContentType.handshake
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.length == 10
-        assert record.fragment == '0123456789'
+        assert record.fragment == b'0123456789'
