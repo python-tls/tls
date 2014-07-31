@@ -9,7 +9,7 @@ import pytest
 from tls.record import ContentType, parse_tls_plaintext
 
 
-class TestRecordParsing(object):
+class TestTLSPlaintextParsing(object):
     """
     Tests for parsing of TLS records.
     """
