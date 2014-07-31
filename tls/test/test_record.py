@@ -47,7 +47,7 @@ class TestRecordParsing(object):
         )
         with pytest.raises(ValueError) as exc_info:
             parse_tls_plaintext(packet)
-        assert exc_info.value.message == "26 is not a valid ContentType"
+        assert str(exc_info.value) == "26 is not a valid ContentType"
 
     def test_incomplete_packet(self):
         """
@@ -61,7 +61,7 @@ class TestRecordParsing(object):
         )
         with pytest.raises(FieldError) as exc_info:
             parse_tls_plaintext(packet)
-        assert exc_info.value.message == "expected 2608, found 9"
+        assert str(exc_info.value) == "expected 2608, found 9"
 
     def test_not_enough_data_to_fragment(self):
         """
@@ -76,4 +76,4 @@ class TestRecordParsing(object):
         )
         with pytest.raises(FieldError) as exc_info:
             parse_tls_plaintext(packet)
-        assert exc_info.value.message == "expected 10, found 2"
+        assert str(exc_info.value) == "expected 10, found 2"
