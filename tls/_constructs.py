@@ -10,7 +10,7 @@ TLSPlaintext = Struct(
     "TLSPlaintext",
     UBInt8("type"),
     ProtocolVersion,
-    UBInt16("length"),
+    UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14
     Bytes("fragment", lambda ctx: ctx.length),
 )
 

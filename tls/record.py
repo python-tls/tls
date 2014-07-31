@@ -57,7 +57,7 @@ def parse_tls_compressed(bytes):
     :param bytes: the bytes representing the input.
     :return: TLSCompressed object.
     """
-    construct = _constructs.TLSPlaintext.parse(bytes)
+    construct = _constructs.TLSCompressed.parse(bytes)
     return TLSCompressed(
         type=ContentType(construct.type),
         version=ProtocolVersion(
