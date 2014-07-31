@@ -18,7 +18,6 @@ TLSCompressed = Struct(
     "TLSCompressed",
     UBInt8("type"),
     ProtocolVersion,
-    UBInt16("length"),
-    # TODO: Reject packets with length > 2 ** 14 + 1024
+    UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 1024
     Bytes("fragment", lambda ctx: ctx.length),
 )
