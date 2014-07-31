@@ -79,7 +79,7 @@ class TestTLSPlaintextParsing(object):
         assert str(exc_info.value) == "expected 10, found 2"
 
 
-class TestTLSCompressedParsing:
+class TestTLSCompressedParsing(object):
     """
     Tests for parsing of TLSCompressed records.
     """
