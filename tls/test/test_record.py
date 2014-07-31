@@ -42,7 +42,7 @@ class TestRecordParsing(object):
             b'\x1a'  # invalid type
             + b'\x03'
             + b'\x03'
-            + b'\x00' + b'\n'
+            + b'\x00\x0A'
             + b'0123456789'
         )
         with pytest.raises(ValueError) as exc_info:
@@ -56,7 +56,7 @@ class TestRecordParsing(object):
         packet = (
             b'\x16'  # type
             + b'\x03'  # minor version
-            + b'\x00' + b'\n'  # big-endian length
+            + b'\x00\x0A'  # big-endian length
             + b'0123456789'  # fragment
         )
         with pytest.raises(FieldError) as exc_info:
@@ -71,7 +71,7 @@ class TestRecordParsing(object):
             b'\x16'  # type
             + b'\x03'  # major version
             + b'\x03'  # minor version
-            + b'\x00' + b'\n'  # big-endian length
+            + b'\x00\x0A'  # big-endian length
             + b'12'  # fragment
         )
         with pytest.raises(FieldError) as exc_info:
