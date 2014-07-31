@@ -18,6 +18,7 @@ class TLSPlaintext(object):
     An object representing a TLSPlaintext struct.
     """
 
+
 @attributes(['type', 'version', 'length', 'fragment'])
 class TLSCompressed(object):
     """
