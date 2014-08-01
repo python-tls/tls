@@ -26,6 +26,13 @@ class TLSCompressed(object):
     """
 
 
+@attributes(['type', 'version', 'fragment'])
+class TLSCiphertext(object):
+    """
+    An object representing a TLSCiphertext struct.
+    """
+
+
 class ContentType(Enum):
     CHANGE_CIPHER_SPEC = 20
     ALERT = 21
@@ -58,6 +65,22 @@ def parse_tls_compressed(bytes):
     """
     construct = _constructs.TLSCompressed.parse(bytes)
     return TLSCompressed(
+        type=ContentType(construct.type),
+        version=ProtocolVersion(
+            major=construct.version.major,
+            minor=construct.version.minor),
+        fragment=construct.fragment)
+
+
+def parse_tls_ciphertext(bytes):
+    """
+    Parse a ``TLSCiphertext`` struct.
+
+    :param bytes: the bytes representing the input.
+    :return: TLSCiphertext object.
+    """
+    construct = _constructs.TLSCiphertext.parse(bytes)
+    return TLSCiphertext(
         type=ContentType(construct.type),
         version=ProtocolVersion(
             major=construct.version.major,
