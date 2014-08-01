@@ -6,7 +6,7 @@ from construct.core import FieldError
 
 import pytest
 
-from tls.record import ContentType, parse_tls_compressed, parse_tls_plaintext
+from tls.record import ContentType, parse_tls_ciphertext, parse_tls_compressed, parse_tls_plaintext
 
 
 class TestTLSPlaintextParsing(object):
@@ -169,5 +169,4 @@ class TestTLSCiphertextParser(object):
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
-        assert record.length == 10
         assert record.fragment == b'0123456789'
