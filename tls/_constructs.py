@@ -22,7 +22,7 @@ TLSCompressed = Struct(
     Bytes("fragment", lambda ctx: ctx.length),
 )
 
-TLSCiphertext= Struct(
+TLSCiphertext = Struct(
     "TLSCompressed",
     UBInt8("type"),
     ProtocolVersion,

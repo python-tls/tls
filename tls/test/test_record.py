@@ -6,7 +6,8 @@ from construct.core import FieldError
 
 import pytest
 
-from tls.record import ContentType, parse_tls_ciphertext, parse_tls_compressed, parse_tls_plaintext
+from tls.record import (ContentType, parse_tls_ciphertext,
+                        parse_tls_compressed, parse_tls_plaintext)
 
 
 class TestTLSPlaintextParsing(object):
@@ -155,8 +156,8 @@ class TestTLSCiphertextParser(object):
 
     def test_parse_tls_ciphertext_handshake(self):
         """
-        :class:`TLSCiphertext`, which has attributes representing all the fields
-        in the TLSCiphertext struct.
+        :class:`TLSCiphertext`, which has attributes representing all the
+        fields in the TLSCiphertext struct.
         """
         packet = (
             b'\x16'  # type
