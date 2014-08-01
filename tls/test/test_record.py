@@ -146,3 +146,28 @@ class TestTLSCompressedParsing(object):
         with pytest.raises(FieldError) as exc_info:
             parse_tls_compressed(packet)
         assert str(exc_info.value) == "expected 10, found 2"
+
+
+class TestTLSCiphertextParser(object):
+    """
+    Tests for parsing of TLSCiphertext records.
+    """
+
+    def test_parse_tls_ciphertext_handshake(self):
+        """
+        :class:`TLSCiphertext`, which has attributes representing all the fields
+        in the TLSCiphertext struct.
+        """
+        packet = (
+            b'\x16'  # type
+            b'\x03'  # major version
+            b'\x03'  # minor version
+            b'\x00\x0A'  # big-endian length
+            b'0123456789'  # fragment
+        )
+        record = parse_tls_ciphertext(packet)
+        assert record.type == ContentType.HANDSHAKE
+        assert record.version.major == 3
+        assert record.version.minor == 3
+        assert record.length == 10
+        assert record.fragment == b'0123456789'
