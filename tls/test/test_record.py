@@ -31,7 +31,6 @@ class TestTLSPlaintextParsing(object):
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
-        assert record.length == 10
         assert record.fragment == b'0123456789'
 
     def test_parse_tls_plaintext_wrong_type(self):
@@ -100,7 +99,6 @@ class TestTLSCompressedParsing(object):
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
-        assert record.length == 10
         assert record.fragment == b'0123456789'
 
     def test_parse_tls_compressed_wrong_type(self):

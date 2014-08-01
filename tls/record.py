@@ -12,14 +12,14 @@ class ProtocolVersion(object):
     """
 
 
-@attributes(['type', 'version', 'length', 'fragment'])
+@attributes(['type', 'version', 'fragment'])
 class TLSPlaintext(object):
     """
     An object representing a TLSPlaintext struct.
     """
 
 
-@attributes(['type', 'version', 'length', 'fragment'])
+@attributes(['type', 'version', 'fragment'])
 class TLSCompressed(object):
     """
     An object representing a TLSCompressed struct.
@@ -46,7 +46,6 @@ def parse_tls_plaintext(bytes):
         version=ProtocolVersion(
             major=construct.version.major,
             minor=construct.version.minor),
-        length=construct.length,
         fragment=construct.fragment)
 
 
@@ -63,5 +62,4 @@ def parse_tls_compressed(bytes):
         version=ProtocolVersion(
             major=construct.version.major,
             minor=construct.version.minor),
-        length=construct.length,
         fragment=construct.fragment)
