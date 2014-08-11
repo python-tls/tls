@@ -244,26 +244,35 @@ TODO
 
 - Certificates
 
-  - TODO: design factories for building sets or chains of certificates from PEM files that are strict about:
+  - TODO: design factories for building sets or chains of certificates from PEM
+    files that are strict about:
 
-    - private keys where they don't belong, or lack of private keys where we should have them
+    - private keys where they don't belong, or lack of private keys where we
+      should have them
 
     - chain files that have things that aren't a part of the chain
 
 - Determine better names for methods
 
-- look through the past ten years of CVEs on OpenSSL, SecureTransport, GnuTLS, PolarSSL, etc.
+- look through the past ten years of CVEs on OpenSSL, SecureTransport, GnuTLS,
+  PolarSSL, etc.
 
   - old TLS Finished security flaw, having to do with half-closed sockets.
-  - timing attacks: http://armoredbarista.blogspot.de/2014/04/easter-hack-even-more-critical-bugs-in.html
+  - timing attacks:
+    http://armoredbarista.blogspot.de/2014/04/easter-hack-even-more-critical-bugs-in.html
 
-- Determine if the TLS implementation needs a clock (are there specific timeouts we need to wait for, etc).
+- Determine if the TLS implementation needs a clock (are there specific
+  timeouts we need to wait for, etc).
 
-  - look up what the requirements for responding to a handshake. scenario: client sends ClientHello (to renegotiate), server already had a huge amount of data in its write buffer. how long should client wait to receive ServerHello?
+  - look up what the requirements for responding to a handshake. scenario:
+    client sends ClientHello (to renegotiate), server already had a huge amount
+    of data in its write buffer. how long should client wait to receive
+    ServerHello?
 
 - add a method to ServerCertificates for non-SNI case
 
-  - Actually, I don't think we need one yet. What's the use case for dynamic lookup of *non*-SNI server certificates?
+  - Actually, I don't think we need one yet. What's the use case for dynamic
+    lookup of *non*-SNI server certificates?
 
 - alerts
 
@@ -275,9 +284,11 @@ TODO
 
 - pin against port and host (???)
 
-- sessions should probably have a .cypher_suite, .tls_version, .session_id, .tls_extensions, and lots more
+- sessions should probably have a .cypher_suite, .tls_version, .session_id,
+  .tls_extensions, and lots more
 
-- allow disabling certain options (tls versions or algorithm choices) that we know are less secure than mandatory options.
+- allow disabling certain options (tls versions or algorithm choices) that we
+  know are less secure than mandatory options.
 
 
 - alternative cert validation support such as DANE or TACK.
@@ -287,10 +298,12 @@ Future Work
 
 - Session resumption:
 
-  - ensure there's a solid way to invalidate session-resumption data on receipt of an alert (on both client and server)
+  - ensure there's a solid way to invalidate session-resumption data on receipt
+    of an alert (on both client and server)
 
 - maybe allow clients to request renegotiation, if there are good use cases.
 
 - maybe allow servers to request renegotiation, if there are good use cases.
 
-- Is there a use case for making dh_params per-server-cert-chain in the SNI case? Some rumblings in this area, but no clear reason.
+- Is there a use case for making dh_params per-server-cert-chain in the SNI
+  case? Some rumblings in this area, but no clear reason.
