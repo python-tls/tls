@@ -77,3 +77,29 @@ Hello Messages
 
   - To indicate that the hello-message phase of the handshake is complete
 
+3.Client:
+=========
+
+- Certificate:
+
+  - If the serevr sent a CertificateRequest
+
+- ClientKeyExchange:
+
+  - The content of this message depends on the public key algorithm selected between ClientHello and ServerHello
+
+- CertificateVerify:
+
+  - If the client certificate sent is with signing ability
+
+- Digitally signed
+
+  - Verifies the possession of private key in certificate
+
+- ChangeCipherSpec:
+
+  - Send this and copy the pending cipher spec into the current cipher spec
+
+- Finished
+
+  - Sent under the new algorithms, keys, and secrets
