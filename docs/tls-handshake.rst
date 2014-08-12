@@ -103,3 +103,15 @@ Hello Messages
 - Finished
 
   - Sent under the new algorithms, keys, and secrets
+
+4.Server:
+=========
+
+- ChangeCipherSpec:
+
+  - Send this and copy the pending cipher spec into the current cipher spec
+
+- Finished
+
+  - Sent under the new cipher spec
+
