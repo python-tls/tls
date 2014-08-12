@@ -31,3 +31,49 @@
        - [ChangeCipherSpec]
        - Finished
 
+Hello Messages
+==============
+
+- ClientHello and ServerHello establish:
+
+  - Protocol version
+
+  - Session ID
+
+  - Cipher suite
+
+  - Compression method
+
+- And generate:
+
+  - ClientHello.random
+
+  - ServerHello.random
+
+- When the client sends a ClientHello to server, it can either respond with a ServerHello, or ignore it, leading to a fatal error and the closing of the connection.
+
+2.Server:
+=========
+
+- Certificate:
+
+  - If it is to be authenticated
+
+- ServerKeyExchange:
+
+  - If server doesn’t have a certificate, or
+
+  - if server’s certificate is for signing only
+
+- CertificateRequest:
+
+  - If:
+
+    - server is authenticated, and
+
+    - it is appropriate to the cipher suite selected
+
+- ServerHelloDone:
+
+  - To indicate that the hello-message phase of the handshake is complete
+
