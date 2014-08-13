@@ -115,3 +115,28 @@ Hello Messages
 
   - Sent under the new cipher spec
 
+
+Server as a state machine:
+==========================
+
+.. list-table::
+   :widths: 20 20 20 35
+   :header-rows: 1
+
+   * - Input
+     - Current State
+     - Next State
+     - Output
+   * - ClientHello
+     - IDLE
+     - WAIT
+     - .. compound:: (ClientHello,
+       Certificate*,
+       ServerKeyExchange*,
+       CertificateRequest*,
+       ServerHelloDone)
+   * - Finished (from Client)
+     - WAIT
+     - APP_DATA
+     - .. compound:: ([ChangeCipherSpec],
+       Finished)
