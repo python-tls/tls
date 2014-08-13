@@ -25,7 +25,7 @@
        - [ChangeCipherSpec]
        - Finished
      - <wait for client’s Finished>
-   * - 3
+   * - 4
      - <wait for server’s Finished>
      - .. compound:: Send:
        - [ChangeCipherSpec]
