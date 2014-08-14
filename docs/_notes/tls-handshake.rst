@@ -192,7 +192,7 @@ Server as a state machine:
    * - ClientHello
      - IDLE
      - CHECK_SESSION_CACHE
-     - -
+     - --
    * - IDFound
      - CHECK_SESSION_CACHE
      - WAIT_RESUME
@@ -250,3 +250,11 @@ Client as a state machine:
      - APP_DATA
      - --
 
+----
+
+   `*` Indicates optional or situation-dependent messages that are not always
+   sent.
+
+   Note: To help avoid pipeline stalls, ChangeCipherSpec is an
+   independent TLS protocol content type, and is not actually a TLS
+   handshake message.
