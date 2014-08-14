@@ -140,3 +140,50 @@ Server as a state machine:
      - APP_DATA
      - .. compound:: ([ChangeCipherSpec],
        Finished)
+
+Session Resumption:
+==================
+
+
+.. list-table::
+   :widths: 10 30 30
+   :header-rows: 1
+
+   * - No.
+     - Client
+     - Server
+   * - 1
+     - .. compound:: Send:
+       - ClientHello
+     - <wait for ClientHello>
+   * - 2
+     - <wait for Server's Finished>
+     - .. compound:: Check session cache for a match.
+
+       - If the session ID is not found:
+
+         - Generate a new session ID & perform a full handshake
+
+       - If the session ID is found:
+
+         - Is willing to re-establish the connection under the specified session state:
+
+           - If No:
+
+             - Generate a new session ID & perform a full handshake
+
+
+           - If Yes, proceed to 3.
+
+   * - 3
+     - <wait for server’s Finished>
+     - .. compound:: Send:
+       - ServerHello
+       - [ChangeCipherSpec]
+       - Finished
+
+   * - 4
+     - .. compound:: Send:
+       - [ChangeCipherSpec]
+       - Finished
+     - <wait for client’s Finished>
