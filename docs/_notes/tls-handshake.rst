@@ -217,3 +217,36 @@ Server as a state machine:
      - APP_DATA
      - -
 
+Client as a state machine:
+==========================
+
+.. list-table::
+   :widths: 20 20 20 35
+   :header-rows: 1
+
+   * - Input
+     - Current State
+     - Next State
+     - Output
+   * - -
+     - IDLE
+     - WAIT_1
+     - ClientHello
+   * - ServerHelloDone
+     - WAIT_1
+     - WAIT_2
+     - .. compound:: (Certificate,
+       ClientKeyExchange,
+       CertificateVerify,
+       [ChangeCipherSpec],
+       Finished)
+   * - Finished (from Server)
+     - WAIT_1
+     - APP_DATA
+     - .. compound:: ([ChangeCipherSpec],
+       Finished)
+   * - Finished (from Server)
+     - WAIT_2
+     - APP_DATA
+     - -
+
