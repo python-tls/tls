@@ -215,7 +215,7 @@ Server as a state machine:
    * - Finished (from Client)
      - WAIT_RESUME
      - APP_DATA
-     - -
+     - --
 
 Client as a state machine:
 ==========================
@@ -248,5 +248,5 @@ Client as a state machine:
    * - Finished (from Server)
      - WAIT_2
      - APP_DATA
-     - -
+     - --
 
