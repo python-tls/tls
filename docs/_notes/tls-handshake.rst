@@ -163,6 +163,20 @@ Session Resumption:
        - Finished
      - <wait for client’s Finished>
 
+1.Client:
+=========
+
+- ClientHello:
+
+  - Sent using the session ID of the session to be resumed.
+
+3.Server:
+=========
+
+- ServerHello:
+
+  - Sent with the same Session ID value (as in the ClientHello message).
+
 
 Server as a state machine:
 ==========================
