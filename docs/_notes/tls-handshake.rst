@@ -162,7 +162,7 @@ Session Resumption:
 
        - If the session ID is not found:
 
-         - Generate a new session ID & perform a full handshake
+         - Generate a new session ID and perform a full handshake
 
        - If the session ID is found:
 
@@ -170,7 +170,7 @@ Session Resumption:
 
            - If No:
 
-             - Generate a new session ID & perform a full handshake
+             - Generate a new session ID and perform a full handshake
 
 
            - If Yes, proceed to 3.
