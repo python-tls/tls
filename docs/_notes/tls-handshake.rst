@@ -228,16 +228,16 @@ Client as a state machine:
      - Current State
      - Next State
      - Output
-   * - -
+   * - --
      - IDLE
      - WAIT_1
      - ClientHello
    * - ServerHelloDone
      - WAIT_1
      - WAIT_2
-     - .. compound:: (Certificate,
+     - .. compound:: (Certificate*,
        ClientKeyExchange,
-       CertificateVerify,
+       CertificateVerify*,
        [ChangeCipherSpec],
        Finished)
    * - Finished (from Server)
