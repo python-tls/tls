@@ -191,8 +191,18 @@ Server as a state machine:
      - Output
    * - ClientHello
      - IDLE
+     - CHECK_SESSION_CACHE
+     - -
+   * - IDFound
+     - CHECK_SESSION_CACHE
+     - WAIT_RESUME
+     - .. compound:: (ServerHello,
+       [ChangeCipherSpec],
+       Finished)
+   * - IDNotFound
+     - CHECK_SESSION_CACHE
      - WAIT
-     - .. compound:: (ClientHello,
+     - .. compound:: (ServerHello,
        Certificate*,
        ServerKeyExchange*,
        CertificateRequest*,
@@ -202,4 +212,8 @@ Server as a state machine:
      - APP_DATA
      - .. compound:: ([ChangeCipherSpec],
        Finished)
+   * - Finished (from Client)
+     - WAIT_RESUME
+     - APP_DATA
+     - -
 
