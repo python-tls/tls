@@ -7,29 +7,29 @@
      - Server
    * - 1
      - .. compound:: Send:
-       - ClientHello
+         - ClientHello
      - <wait for ClientHello>
    * - 2
      - <wait for ServerHelloDone>
      - .. compound:: Send:
-       - ServerHello
-       - Certificate*
-       - ServerKeyExchange*
-       - CertificateRequest*
-       - ServerHelloDone
+         - ServerHello
+         - Certificate*
+         - ServerKeyExchange*
+         - CertificateRequest*
+         - ServerHelloDone
    * - 3
      - .. compound:: Send:
-       - Certificate*
-       - ClientKeyExchange*
-       - CertificateVerify*
-       - [ChangeCipherSpec]
-       - Finished
+         - Certificate*
+         - ClientKeyExchange*
+         - CertificateVerify*
+         - [ChangeCipherSpec]
+         - Finished
      - <wait for client’s Finished>
    * - 4
      - <wait for server’s Finished>
      - .. compound:: Send:
-       - [ChangeCipherSpec]
-       - Finished
+         - [ChangeCipherSpec]
+         - Finished
 
 Hello Messages
 ==============
@@ -50,7 +50,9 @@ Hello Messages
 
   - ServerHello.random
 
-- When the client sends a ClientHello to server, it can either respond with a ServerHello, or ignore it, leading to a fatal error and the closing of the connection.
+- When the client sends a ClientHello to server, it can either respond with a
+  ServerHello, or ignore it, leading to a fatal error and the closing of the
+  connection.
 
 2.Server:
 =========
@@ -61,7 +63,7 @@ Hello Messages
 
 - ServerKeyExchange:
 
-  - If server doesn’t have a certificate, or
+  - If server doesn't have a certificate, or
 
   - if server’s certificate is for signing only
 
@@ -86,7 +88,8 @@ Hello Messages
 
 - ClientKeyExchange:
 
-  - The content of this message depends on the public key algorithm selected between ClientHello and ServerHello
+  - The content of this message depends on the public key algorithm selected
+    between ClientHello and ServerHello
 
 - CertificateVerify:
 
@@ -117,7 +120,7 @@ Hello Messages
 
 
 Session Resumption:
-==================
+===================
 
 
 .. list-table::
@@ -129,7 +132,7 @@ Session Resumption:
      - Server
    * - 1
      - .. compound:: Send:
-       - ClientHello
+         - ClientHello
      - <wait for ClientHello>
    * - 2
      - <wait for Server's Finished>
@@ -141,7 +144,8 @@ Session Resumption:
 
        - If the session ID is found:
 
-         - Is willing to re-establish the connection under the specified session state:
+         - Is willing to re-establish the connection under the specified
+           session state:
 
            - If No:
 
@@ -153,14 +157,14 @@ Session Resumption:
    * - 3
      - <wait for server’s Finished>
      - .. compound:: Send:
-       - ServerHello
-       - [ChangeCipherSpec]
-       - Finished
+         - ServerHello
+         - [ChangeCipherSpec]
+         - Finished
 
    * - 4
      - .. compound:: Send:
-       - [ChangeCipherSpec]
-       - Finished
+         - [ChangeCipherSpec]
+         - Finished
      - <wait for client’s Finished>
 
 1.Client:
@@ -197,21 +201,21 @@ Server as a state machine:
      - CHECK_SESSION_CACHE
      - WAIT_RESUME
      - .. compound:: (ServerHello,
-       [ChangeCipherSpec],
-       Finished)
+         [ChangeCipherSpec],
+         Finished)
    * - IDNotFound
      - CHECK_SESSION_CACHE
      - WAIT
      - .. compound:: (ServerHello,
-       Certificate*,
-       ServerKeyExchange*,
-       CertificateRequest*,
-       ServerHelloDone)
+         Certificate*,
+         ServerKeyExchange*,
+         CertificateRequest*,
+         ServerHelloDone)
    * - Finished (from Client)
      - WAIT
      - APP_DATA
      - .. compound:: ([ChangeCipherSpec],
-       Finished)
+         Finished)
    * - Finished (from Client)
      - WAIT_RESUME
      - APP_DATA
@@ -236,15 +240,15 @@ Client as a state machine:
      - WAIT_1
      - WAIT_2
      - .. compound:: (Certificate*,
-       ClientKeyExchange,
-       CertificateVerify*,
-       [ChangeCipherSpec],
-       Finished)
+         ClientKeyExchange,
+         CertificateVerify*,
+         [ChangeCipherSpec],
+         Finished)
    * - Finished (from Server)
      - WAIT_1
      - APP_DATA
      - .. compound:: ([ChangeCipherSpec],
-       Finished)
+         Finished)
    * - Finished (from Server)
      - WAIT_2
      - APP_DATA

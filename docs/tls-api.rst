@@ -62,7 +62,7 @@ Python TLS API
         :raises InvalidatedError:
             When the session has been invalidated due to a previous error and will accept no further data.
 
-        Given data read from a transport, invoke any callbacks for e.g. session negotatiation or heartbeats, etc, and return decrypted application data, if any.
+        Given data read from a transport, invoke any callbacks for e.g. session negotiation or heartbeats, etc, and return decrypted application data, if any.
         If the input data is somehow invalid, a TLS Alert message will be passed to the write callback, and a BadTLSDataError will be raised.
         In certain cases of receipt of invalid data, after (sometimes) sending a TLS Alert, this session will be invalidated such that receive_data and write_data will raise :class:`InvalidatedError`.
         Note that any incomplete data in the input may be buffered by the implementation until further calls to receive_data complete the messages.
@@ -284,7 +284,7 @@ TODO
 
 - pin against port and host (???)
 
-- sessions should probably have a .cypher_suite, .tls_version, .session_id,
+- sessions should probably have a .cipher_suite, .tls_version, .session_id,
   .tls_extensions, and lots more
 
 - allow disabling certain options (tls versions or algorithm choices) that we
