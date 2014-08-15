@@ -82,7 +82,7 @@ Hello Messages
 
 - Certificate:
 
-  - If the serevr sent a CertificateRequest
+  - If the server sent a CertificateRequest
 
 - ClientKeyExchange:
 
