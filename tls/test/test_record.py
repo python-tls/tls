@@ -4,8 +4,10 @@ from construct.core import FieldError
 
 import pytest
 
-from tls.record import (ContentType, parse_tls_ciphertext,
-                        parse_tls_compressed, parse_tls_plaintext)
+from tls.record import (
+    ContentType, parse_tls_ciphertext, parse_tls_compressed,
+    parse_tls_plaintext
+)
 
 
 class TestTLSPlaintextParsing(object):
