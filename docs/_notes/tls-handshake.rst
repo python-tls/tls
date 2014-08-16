@@ -12,23 +12,37 @@
    * - 2
      - <wait for ServerHelloDone>
      - .. compound:: Send:
+
          - ServerHello
+
          - Certificate*
+
          - ServerKeyExchange*
+
          - CertificateRequest*
+
          - ServerHelloDone
+
    * - 3
      - .. compound:: Send:
+
          - Certificate*
+
          - ClientKeyExchange*
+
          - CertificateVerify*
+
          - [ChangeCipherSpec]
+
          - Finished
+
      - <wait for client’s Finished>
    * - 4
      - <wait for server’s Finished>
      - .. compound:: Send:
+
          - [ChangeCipherSpec]
+
          - Finished
 
 Hello Messages
@@ -132,7 +146,9 @@ Session Resumption:
      - Server
    * - 1
      - .. compound:: Send:
+
          - ClientHello
+
      - <wait for ClientHello>
    * - 2
      - <wait for Server's Finished>
@@ -157,14 +173,20 @@ Session Resumption:
    * - 3
      - <wait for server’s Finished>
      - .. compound:: Send:
+
          - ServerHello
+
          - [ChangeCipherSpec]
+
          - Finished
 
    * - 4
      - .. compound:: Send:
+
          - [ChangeCipherSpec]
+
          - Finished
+
      - <wait for client’s Finished>
 
 1.Client:
