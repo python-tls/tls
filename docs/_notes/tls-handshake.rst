@@ -222,7 +222,7 @@ Server as a state machine:
      - Alert(no_renegotiation)
    * - Alert(close_notify)
      - APP_DATA
-     - PEER_INITIATED_CLOSING
+     - SHUTDOWN
      - (Alert(close_notify),
        ``close_callback(False)``)
    * - ``Session.alert(close_notify)``
