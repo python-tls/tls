@@ -193,13 +193,13 @@ Server as a state machine:
      - IDLE
      - CHECK_SESSION_CACHE
      - --
-   * - IDFound
+   * - ``id_found_somehow``
      - CHECK_SESSION_CACHE
      - WAIT_RESUME
      - .. compound:: (ServerHello,
        [ChangeCipherSpec],
        Finished)
-   * - IDNotFound
+   * - ``id_not_found_somehow``
      - CHECK_SESSION_CACHE
      - WAIT
      - .. compound:: (ServerHello,
