@@ -220,22 +220,6 @@ Server as a state machine:
      - APP_DATA
      - APP_DATA
      - Alert(no_renegotiation)
-   * - Alert(close_notify)
-     - APP_DATA
-     - SHUTDOWN
-     - (Alert(close_notify),
-       ``close_callback(False)``,
-       ``indicate_EOF_to_the_application_somehow``)
-   * - ``Session.alert(close_notify)``
-     - APP_DATA
-     - HOST_INITIATED_CLOSING
-     - Alert(close_notify)
-   * - Alert(close_notify)
-     - HOST_INITIATED_CLOSING
-     - SHUTDOWN
-     - (``close_callback(True)``,
-       ``indicate_EOF_to_the_application_somehow``)
-
 
 Client as a state machine:
 ==========================
@@ -278,3 +262,30 @@ Client as a state machine:
    Note: To help avoid pipeline stalls, ChangeCipherSpec is an
    independent TLS protocol content type, and is not actually a TLS
    handshake message.
+
+Common states for both state machines:
+======================================
+
+.. list-table::
+   :widths: 20 20 20 35
+   :header-rows: 1
+
+   * - Input
+     - Current State
+     - Next State
+     - Output
+   * - Alert(close_notify)
+     - APP_DATA
+     - SHUTDOWN
+     - (Alert(close_notify),
+       ``close_callback(False)``,
+       ``indicate_EOF_to_the_application_somehow``)
+   * - ``Session.alert(close_notify)``
+     - APP_DATA
+     - HOST_INITIATED_CLOSING
+     - Alert(close_notify)
+   * - Alert(close_notify)
+     - HOST_INITIATED_CLOSING
+     - SHUTDOWN
+     - (``close_callback(True)``,
+       ``indicate_EOF_to_the_application_somehow``)
