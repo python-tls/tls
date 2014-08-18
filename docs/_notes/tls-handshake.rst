@@ -224,7 +224,8 @@ Server as a state machine:
      - APP_DATA
      - SHUTDOWN
      - (Alert(close_notify),
-       ``close_callback(False)``)
+       ``close_callback(False)``,
+       ``indicate_EOF_to_the_application_somehow``)
    * - ``Session.alert(close_notify)``
      - APP_DATA
      - HOST_INITIATED_CLOSING
