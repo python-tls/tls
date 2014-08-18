@@ -222,12 +222,18 @@ Server as a state machine:
      - Alert(no_renegotiation)
    * - Alert(close_notify)
      - APP_DATA
-     - CLOSING
+     - PEER_INITIATED_CLOSING
+     - (Alert(close_notify),
+       ``close_callback(False)``)
+   * - ``Session.alert(close_notify)``
+     - APP_DATA
+     - HOST_INITIATED_CLOSING
      - Alert(close_notify)
    * - Alert(close_notify)
-     - CLOSING
-     - IDLE
-     - ``Transport.close()``
+     - HOST_INITIATED_CLOSING
+     - SHUTDOWN
+     - (``close_callback(True)``,
+       ``indicate_EOF_to_the_application_somehow``)
 
 
 Client as a state machine:
