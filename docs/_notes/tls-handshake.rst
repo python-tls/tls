@@ -216,6 +216,19 @@ Server as a state machine:
      - WAIT_RESUME
      - APP_DATA
      - --
+   * - ClientHello
+     - APP_DATA
+     - APP_DATA
+     - Alert(no_renegotiation)
+   * - Alert(close_notify)
+     - APP_DATA
+     - CLOSING
+     - Alert(close_notify)
+   * - Alert(close_notify)
+     - CLOSING
+     - IDLE
+     - ``Transport.close()``
+
 
 Client as a state machine:
 ==========================
