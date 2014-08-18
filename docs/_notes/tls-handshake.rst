@@ -289,3 +289,7 @@ Common states for both state machines:
      - SHUTDOWN
      - (``close_callback(True)``,
        ``indicate_EOF_to_the_application_somehow``)
+   * - ``Session.write_data``
+     - APP_DATA
+     - APP_DATA
+     - ``write_callback()``
