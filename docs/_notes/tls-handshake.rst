@@ -253,6 +253,10 @@ Client as a state machine:
      - WAIT_2
      - APP_DATA
      - --
+   * - HelloRequest
+     - APP_DATA
+     - APP_DATA
+     - Alert(no_renegotiation)
 
 ----
 
