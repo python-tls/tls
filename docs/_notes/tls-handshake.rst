@@ -223,8 +223,8 @@ Server as a state machine:
      - CHECK_SESSION_CACHE
      - WAIT_RESUME
      - .. compound:: (ServerHello,
-       [ChangeCipherSpec],
-       Finished)
+         [ChangeCipherSpec],
+         Finished)
    * - ``id_not_found_somehow``
      - CHECK_SESSION_CACHE
      - WAIT
