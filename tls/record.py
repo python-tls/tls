@@ -54,8 +54,10 @@ def parse_tls_plaintext(bytes):
         type=ContentType(construct.type),
         version=ProtocolVersion(
             major=construct.version.major,
-            minor=construct.version.minor),
-        fragment=construct.fragment)
+            minor=construct.version.minor
+        ),
+        fragment=construct.fragment
+    )
 
 
 def parse_tls_compressed(bytes):
@@ -70,8 +72,10 @@ def parse_tls_compressed(bytes):
         type=ContentType(construct.type),
         version=ProtocolVersion(
             major=construct.version.major,
-            minor=construct.version.minor),
-        fragment=construct.fragment)
+            minor=construct.version.minor
+        ),
+        fragment=construct.fragment
+    )
 
 
 def parse_tls_ciphertext(bytes):
@@ -86,5 +90,7 @@ def parse_tls_ciphertext(bytes):
         type=ContentType(construct.type),
         version=ProtocolVersion(
             major=construct.version.major,
-            minor=construct.version.minor),
-        fragment=construct.fragment)
+            minor=construct.version.minor
+        ),
+        fragment=construct.fragment
+    )
