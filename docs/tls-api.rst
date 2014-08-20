@@ -10,11 +10,17 @@ Python TLS API
     :param ClientCertificateStore client_certificate_store:
         The certificate that the client will present to the server.
 
-    .. method:: start(write_callback, verify_callback=None)
+    .. method:: start(write_callback, close_callback, verify_callback=None)
 
         :param callable write_callback:
             Callable of one argument of ``bytes`` type.
             It will be called when TLS data should be sent over the transport.
+        :param callable close_callback:
+            Callable of one argument of ``bool`` type, called ``immediate``.
+            It will be called when the TLS protocols mandates a transport shutdown.
+            The read side of the connection must always be shut down immediately and no further data should be delivered to the session.
+            If ``immediate`` is True, then the transport should close the write side of the transport and free all associated resources as soon as possible.
+            If ``immediate`` is False, then the transport should make a reasonable attempt to deliver the bytes already sent to ``write_callback`` (which will be a ``close_alert`` message), meaning it can wait for a configured timeout before closing down the write side of the connection.
         :param callable verify_callback:
             Callable of two arguments: a list of :class:`Certificate` objects, and a :class:`Session` object.
             It will be called once per negotiation with a list of Certificates and the session object.

@@ -219,13 +219,13 @@ Server as a state machine:
      - IDLE
      - CHECK_SESSION_CACHE
      - --
-   * - IDFound
+   * - ``id_found_somehow``
      - CHECK_SESSION_CACHE
      - WAIT_RESUME
      - .. compound:: (ServerHello,
          [ChangeCipherSpec],
          Finished)
-   * - IDNotFound
+   * - ``id_not_found_somehow``
      - CHECK_SESSION_CACHE
      - WAIT
      - .. compound:: (ServerHello,
@@ -242,6 +242,10 @@ Server as a state machine:
      - WAIT_RESUME
      - APP_DATA
      - --
+   * - ClientHello
+     - APP_DATA
+     - APP_DATA
+     - Alert(no_renegotiation)
 
 Client as a state machine:
 ==========================
@@ -275,6 +279,10 @@ Client as a state machine:
      - WAIT_2
      - APP_DATA
      - --
+   * - HelloRequest
+     - APP_DATA
+     - APP_DATA
+     - Alert(no_renegotiation)
 
 ----
 
@@ -284,3 +292,34 @@ Client as a state machine:
    Note: To help avoid pipeline stalls, ChangeCipherSpec is an
    independent TLS protocol content type, and is not actually a TLS
    handshake message.
+
+Common states for both state machines:
+======================================
+
+.. list-table::
+   :widths: 20 20 20 35
+   :header-rows: 1
+
+   * - Input
+     - Current State
+     - Next State
+     - Output
+   * - Alert(close_notify)
+     - APP_DATA
+     - SHUTDOWN
+     - (Alert(close_notify),
+       ``close_callback(False)``,
+       ``indicate_EOF_to_the_application_somehow``)
+   * - ``Session.alert(close_notify)``
+     - APP_DATA
+     - HOST_INITIATED_CLOSING
+     - Alert(close_notify)
+   * - Alert(close_notify)
+     - HOST_INITIATED_CLOSING
+     - SHUTDOWN
+     - (``close_callback(True)``,
+       ``indicate_EOF_to_the_application_somehow``)
+   * - ``Session.write_data``
+     - APP_DATA
+     - APP_DATA
+     - ``write_callback()``
