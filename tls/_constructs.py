@@ -32,3 +32,7 @@ TLSCiphertext = Struct(
     UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 2048
     Bytes("fragment", lambda ctx: ctx.length),
 )
+
+HelloRequest = Struct(
+    "HelloRequest"
+)
