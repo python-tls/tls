@@ -33,6 +33,6 @@ TLSCiphertext = Struct(
     Bytes("fragment", lambda ctx: ctx.length),
 )
 
-HelloRequest = Struct(
-    "HelloRequest"
-)
+# HelloRequest = Struct(
+#    "HelloRequest"
+# )
