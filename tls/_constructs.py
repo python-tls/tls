@@ -26,7 +26,7 @@ TLSCompressed = Struct(
 )
 
 TLSCiphertext = Struct(
-    "TLSCompressed",
+    "TLSCiphertext",
     UBInt8("type"),
     ProtocolVersion,
     UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 2048
