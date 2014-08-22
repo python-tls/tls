@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from construct import Bytes, Struct, UBInt16, UBInt8
+from construct import Array, Bytes, Struct, UBInt16, UBInt8, UBInt32
 
 
 ProtocolVersion = Struct(
@@ -36,3 +36,33 @@ TLSCiphertext = Struct(
 # HelloRequest = Struct(
 #    "HelloRequest"
 # )
+
+ClientVersion = Struct(
+    "client_version",
+    UBInt8("major"),
+    UBInt8("minor")
+)
+
+
+Random = Struct(
+    "random",
+    UBInt32("gmt_unix_time"),
+    Bytes("random_bytes", 28),
+)
+
+
+SessionID = Bytes("session_id", 32)
+
+
+CipherSuite = Array(2, UBInt8("CipherSuite"))
+
+
+ClientHello = Struct(
+    "ClientHello",
+    ClientVersion,
+    Random,
+    SessionID,
+    CipherSuite,
+    UBInt8("compression_methods"),
+    # TODO: extensions_present
+)
