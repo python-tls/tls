@@ -28,9 +28,9 @@ class Random(object):
     """
 
 
+# TODO: Figure out what to do about extensions present
 @attributes(['client_version', 'random', 'session_id', 'cipher_suites',
-             'compression_methods'])  # TODO: Figure out what to do about
-                                      #       extensions present
+             'compression_methods'])
 class ClientHello(object):
     """
     An object representing a ClientHello message.

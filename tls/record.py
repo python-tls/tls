@@ -41,6 +41,7 @@ class ContentType(Enum):
     HANDSHAKE = 22
     APPLICATION_DATA = 23
 
+
 def parse_tls_plaintext(bytes):
     """
     Parse a ``TLSPlaintext`` struct.
@@ -93,5 +94,3 @@ def parse_tls_ciphertext(bytes):
         ),
         fragment=construct.fragment
     )
-
-
