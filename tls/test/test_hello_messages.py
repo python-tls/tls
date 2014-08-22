@@ -65,7 +65,7 @@ class TestClientHello(object):
             b'01234567890123456789012345678901'  # session_id
             b'\x01\x02'  # cipher_suites
             b'\x00'  # compression_methods
-            #  b''  # XXX: extentions ???
+            #  b''  # XXX: extensions ???
         )
         record = parse_client_hello(packet)
         assert isinstance(record, ClientHello)
