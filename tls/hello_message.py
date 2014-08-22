@@ -36,7 +36,7 @@ class Extension(object):
 
 
 @attributes(['client_version', 'random', 'session_id', 'cipher_suites',
-             'compression_methods'])
+             'compression_methods', 'extensions'])
 class ClientHello(object):
     """
     An object representing a ClientHello message.
