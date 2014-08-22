@@ -57,7 +57,7 @@ def parse_client_hello(bytes):
     :param bytes: the bytes representing the input.
     :return: ClientHello object.
     """
-    construct = _constructs.ClientHello(bytes)
+    construct = _constructs.ClientHello.parse(bytes)
     return ClientHello(
         client_version=ClientVersion(
             major=construct.client_version.major,
