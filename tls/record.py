@@ -41,11 +41,6 @@ class ContentType(Enum):
     HANDSHAKE = 22
     APPLICATION_DATA = 23
 
-
-class CompressionMethod(Enum):
-    NULL = 0
-
-
 def parse_tls_plaintext(bytes):
     """
     Parse a ``TLSPlaintext`` struct.
@@ -99,12 +94,4 @@ def parse_tls_ciphertext(bytes):
         fragment=construct.fragment
     )
 
-
-def parse_client_hello(bytes):
-    """
-    Parse a ``ClientHello`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: ClientHello object.
-    """
 

@@ -14,7 +14,24 @@ class HelloRequest(object):
     """
 
 
-@attributes(['client_version', 'random', 'session_id', 'cipher_suites', 'compression_methods'])  # TODO: Figure out what to do about extensions present
+@attributes(['major', 'minor'])
+class ClientVersion(object):
+    """
+    An object representing a ClientVersion struct.
+    """
+
+
+@attributes(['gmt_unix_time', 'random_bytes'])
+class Random(object):
+    """
+    An object representing a Random struct.
+    """
+
+
+
+@attributes(['client_version', 'random', 'session_id', 'cipher_suites',
+             'compression_methods'])  # TODO: Figure out what to do about
+                                      #       extensions present
 class ClientHello(object):
     """
     An object representing a ClientHello message.
@@ -40,4 +57,22 @@ def parse_client_hello(bytes):
     :param bytes: the bytes representing the input.
     :return: ClientHello object.
     """
+    construct = _constructs.ClientHello(bytes)
+    return ClientHello(
+        client_version=ClientVersion(
+            major=construct.client_version.major,
+            minor=construct.client_version.minor,
+        ),
+        random=Random(
+            gmt_unix_time=construct.random.gmt_unix_time,
+            random_bytes=construct.random.random_bytes,
+        ),
+        session_id=construct.session_id,
+        cipher_suites=construct.cipher_suites,
+        compression_methods=construct.compression_methods,
+    )
+
+            ########### XXX YOU ARE HERE!  ###########
+
+
 

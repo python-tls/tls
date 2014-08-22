@@ -61,7 +61,7 @@ class TestClientHello(object):
         """
         packet = (
             b'\x03\x00'  # client_version
-            b''  # random
+            b'\x01\x02\x03\x04'  # random
             b''  # session_id
             b''  # cipher_suites
             b''  # compression_methods
