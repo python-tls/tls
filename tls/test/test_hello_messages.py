@@ -77,5 +77,6 @@ class TestClientHello(object):
         assert record.session_id == b'01234567890123456789012345678901'
         assert record.cipher_suites == [1, 2]
         assert record.compression_methods == CompressionMethod.NULL
-        assert record.extensions.extension_type == ExtensionType.SIGNATURE_ALGORITHMS
+        assert record.extensions.extension_type == \
+            ExtensionType.SIGNATURE_ALGORITHMS
         assert record.extensions.extension_data == b''
