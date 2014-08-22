@@ -60,7 +60,7 @@ CipherSuite = Array(2, UBInt8("cipher_suites"))
 Extension = Struct(
     "extensions",
     UBInt16("extension_type"),
-    Bytes("extension_data", 1),
+    Bytes("extension_data", 0),
     # TODO: Make this <0 - 65535>
 )
 

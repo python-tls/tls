@@ -66,7 +66,7 @@ class TestClientHello(object):
             b'\x01\x02'  # cipher_suites
             b'\x00'  # compression_methods
             b'\x00\x0D'  # extensions.extension_type
-            b'0'  # extensions.extension_data
+            b''  # extensions.extension_data
         )
         record = parse_client_hello(packet)
         assert isinstance(record, ClientHello)
@@ -78,4 +78,4 @@ class TestClientHello(object):
         assert record.cipher_suites == [1, 2]
         assert record.compression_methods == CompressionMethod.NULL
         assert record.extensions.extension_type == ExtensionType.SIGNATURE_ALGORITHMS
-        assert record.extensions.extension_data == b'0'
+        assert record.extensions.extension_data == b''
