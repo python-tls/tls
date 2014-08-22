@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.hello_message import (
-    ClientHello, CompressionMethod, HelloRequest, parse_client_hello,
-    parse_hello_request
+    ClientHello, CompressionMethod, ExtensionType, HelloRequest,
+    parse_client_hello, parse_hello_request
 )
 
 
@@ -65,7 +65,8 @@ class TestClientHello(object):
             b'01234567890123456789012345678901'  # session_id
             b'\x01\x02'  # cipher_suites
             b'\x00'  # compression_methods
-            #  b''  # XXX: extensions ???
+            b'\x00\x0D'  # extensions.extension_type
+            b'0'  # extensions.extension_data
         )
         record = parse_client_hello(packet)
         assert isinstance(record, ClientHello)
@@ -76,3 +77,5 @@ class TestClientHello(object):
         assert record.session_id == b'01234567890123456789012345678901'
         assert record.cipher_suites == [1, 2]
         assert record.compression_methods == CompressionMethod.NULL
+        assert record.extensions.extension_type == ExtensionType.SIGNATURE_ALGORITHMS
+        assert record.extensions.extension_data == b'0'

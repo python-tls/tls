@@ -28,7 +28,13 @@ class Random(object):
     """
 
 
-# TODO: Figure out what to do about extensions present
+@attributes(['extension_type', 'extension_data'])
+class Extension(object):
+    """
+    An object representing an Extension struct.
+    """
+
+
 @attributes(['client_version', 'random', 'session_id', 'cipher_suites',
              'compression_methods'])
 class ClientHello(object):
@@ -47,6 +53,11 @@ def parse_hello_request():
 
 class CompressionMethod(Enum):
     NULL = 0
+
+
+class ExtensionType(Enum):
+    SIGNATURE_ALGORITHMS = 13
+    # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
 
 
 def parse_client_hello(bytes):
@@ -69,4 +80,8 @@ def parse_client_hello(bytes):
         session_id=construct.session_id,
         cipher_suites=construct.cipher_suites,
         compression_methods=CompressionMethod(construct.compression_methods),
+        extensions=Extension(
+            extension_type=ExtensionType(construct.extensions.extension_type),
+            extension_data=construct.extensions.extension_data
+        )
     )

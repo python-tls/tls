@@ -57,6 +57,14 @@ SessionID = Bytes("session_id", 32)
 CipherSuite = Array(2, UBInt8("cipher_suites"))
 
 
+Extension = Struct(
+    "extensions",
+    UBInt16("extension_type"),
+    Bytes("extension_data", 1),
+    # TODO: Make this <0 - 65535>
+)
+
+
 ClientHello = Struct(
     "ClientHello",
     ClientVersion,
@@ -64,5 +72,5 @@ ClientHello = Struct(
     SessionID,
     CipherSuite,
     UBInt8("compression_methods"),
-    # TODO: extensions_present
+    Extension,
 )
