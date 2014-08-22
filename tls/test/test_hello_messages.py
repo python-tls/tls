@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 from tls.hello_message import (
-    HelloRequest, parse_hello_request, ClientHello, parse_client_hello
+    HelloRequest, parse_hello_request, ClientHello, CompressionMethod,
+    parse_client_hello
 )
 
 
@@ -61,18 +62,19 @@ class TestClientHello(object):
         """
         packet = (
             b'\x03\x00'  # client_version
-            b'\x01\x02\x03\x04'  # random
-            b''  # session_id
-            b''  # cipher_suites
-            b''  # compression_methods
+            b'\x01\x02\x03\x04'  # random.gmt_unix_time
+            b'0123456789012345678901234567' # random.random_bytes
+            b'01234567890123456789012345678901'  # session_id
+            b'\x01\x02'  # cipher_suites
+            b'\x00'  # compression_methods
           #  b''  # XXX: extentions ???
         )
         record = parse_client_hello(packet)
         assert record.client_version.major == 3
         assert record.client_version.minor == 0
-        assert record.random == None
-        assert record.session_id == None
-        assert record.cipher_suites == None
-        assert record.compression_methods == None
-# XXX        assert record.
+        assert record.random.gmt_unix_time == 16909060
+        assert record.random.random_bytes ==  b'0123456789012345678901234567'
+        assert record.session_id == b'01234567890123456789012345678901'
+        assert record.cipher_suites == [1, 2]
+        assert record.compression_methods == CompressionMethod.NULL
 

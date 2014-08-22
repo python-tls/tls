@@ -54,7 +54,7 @@ Random = Struct(
 SessionID = Bytes("session_id", 32)
 
 
-CipherSuite = Array(2, UBInt8("CipherSuite"))
+CipherSuite = Array(2, UBInt8("cipher_suites"))
 
 
 ClientHello = Struct(

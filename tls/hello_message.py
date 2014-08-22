@@ -28,7 +28,6 @@ class Random(object):
     """
 
 
-
 @attributes(['client_version', 'random', 'session_id', 'cipher_suites',
              'compression_methods'])  # TODO: Figure out what to do about
                                       #       extensions present
@@ -69,10 +68,5 @@ def parse_client_hello(bytes):
         ),
         session_id=construct.session_id,
         cipher_suites=construct.cipher_suites,
-        compression_methods=construct.compression_methods,
+        compression_methods=CompressionMethod(construct.compression_methods),
     )
-
-            ########### XXX YOU ARE HERE!  ###########
-
-
-
