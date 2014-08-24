@@ -43,6 +43,14 @@ class ClientHello(object):
     """
 
 
+@attributes(['server_version', 'random', 'session_id', 'cipher_suite',
+             'compression_method', 'extensions'])
+class ServerHello(object):
+    """
+    An object representing a ServerHello message.
+    """
+
+
 def parse_hello_request():
     """
     Parse a ``HelloRequest`` struct.
@@ -84,3 +92,12 @@ def parse_client_hello(bytes):
             extension_data=construct.extensions.extension_data
         )
     )
+
+def parse_server_hello(bytes):
+    """
+    Parse a ``ServerHello`` struct.
+
+    :param bytes: the bytes representing the input.
+    :return: ServerHello object.
+    """
+

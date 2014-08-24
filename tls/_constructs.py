@@ -56,7 +56,6 @@ Extension = Struct(
     # TODO: Make this <0 - 65535>
 )
 
-
 ClientHello = Struct(
     "ClientHello",
     ClientVersion,
@@ -64,5 +63,23 @@ ClientHello = Struct(
     SessionID,
     CipherSuite,
     UBInt8("compression_methods"),
+    Extension,
+)
+
+ServerVersion = Struct(
+    "server_version",
+    UBInt8("major"),
+    UBInt8("minor")
+)
+
+CipherSuiteForServer = Array(2, UBInt8("cipher_suite"))
+
+ServerHello = Struct(
+    "ServerHello",
+    ServerVersion,
+    Random,
+    SessionID,
+    CipherSuiteForServer,
+    UBInt8("compression_method"),
     Extension,
 )
