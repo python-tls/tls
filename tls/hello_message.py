@@ -47,7 +47,6 @@ def parse_hello_request():
     """
     Parse a ``HelloRequest`` struct.
     """
-#    construct = _constructs.HelloRequest.parse() # Do we relly need this?
     return HelloRequest()
 
 
