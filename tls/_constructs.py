@@ -32,3 +32,18 @@ TLSCiphertext = Struct(
     UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 2048
     Bytes("fragment", lambda ctx: ctx.length),
 )
+
+SignatureAndHashAlgorithm = Struct(
+    "supported_signature_algorithms",
+    UBInt8("hash"),
+    UBInt8("signature"),
+)
+
+DistinguishedName = Bytes("certificate_authorities", 65535)
+
+CertificateRequest = Struct(
+    "CertificateRequest",
+    UBInt8("certificate_types"),  # XXX: I think this is a list or something. Check.
+    SignatureAndHashAlgorithm,
+    DistinguishedName,
+)
