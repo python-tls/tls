@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.hello_message import (
-    ClientHello, CompressionMethod, ExtensionType, parse_client_hello,
-    parse_server_hello, ServerHello
+    ClientHello, CompressionMethod, ExtensionType, ServerHello,
+    parse_client_hello, parse_server_hello
 )
 
 
@@ -44,35 +44,7 @@ class TestServerHello(object):
     """
     Tests for the parsing of ServerHello messages.
     """
-    """
-    struct {
-        ProtocolVersion client_version;
-        Random random;
-        SessionID session_id;
-        CipherSuite cipher_suites<2..2^16-2>;
-        CompressionMethod compression_methods<1..2^8-1>;
-        select (extensions_present) {
-            case false:
-                struct {};
-            case true:
-                Extension extensions<0..2^16-1>;
-        };
-    } ClientHello;
 
-    struct {
-        ProtocolVersion server_version;
-        Random random;
-        SessionID session_id;
-        CipherSuite cipher_suite;
-        CompressionMethod compression_method;
-        select (extensions_present) {
-            case false:
-                struct {};
-            case true:
-                Extension extensions<0..2^16-1>;
-        };
-    } ServerHello;
-    """
     def test_parse_server_hello(self):
         """
         :func:`parse_server_hello` returns an instance of
