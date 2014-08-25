@@ -7,13 +7,6 @@ from characteristic import attributes
 from tls import _constructs
 
 
-# @attributes([])
-class HelloRequest(object):
-    """
-    An object representing a HelloRequest message.
-    """
-
-
 @attributes(['major', 'minor'])
 class ClientVersion(object):
     """
@@ -51,13 +44,6 @@ class ServerHello(object):
     """
 
 
-def parse_hello_request():
-    """
-    Parse a ``HelloRequest`` struct.
-    """
-    return HelloRequest()
-
-
 class CompressionMethod(Enum):
     NULL = 0
 
@@ -93,6 +79,7 @@ def parse_client_hello(bytes):
         )
     )
 
+
 def parse_server_hello(bytes):
     """
     Parse a ``ServerHello`` struct.
@@ -100,4 +87,3 @@ def parse_server_hello(bytes):
     :param bytes: the bytes representing the input.
     :return: ServerHello object.
     """
-
