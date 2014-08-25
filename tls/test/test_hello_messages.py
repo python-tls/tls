@@ -79,12 +79,12 @@ class TestServerHello(object):
         :class:`ServerHello`.
         """
         packet = (
-            b'\x03\x00'  # client_version
+            b'\x03\x00'  # server_version
             b'\x01\x02\x03\x04'  # random.gmt_unix_time
             b'0123456789012345678901234567'  # random.random_bytes
             b'01234567890123456789012345678901'  # session_id
-            b'\x01\x02'  # cipher_suites
-            b'\x00'  # compression_methods
+            b'\x01\x02'  # cipher_suite
+            b'\x00'  # compression_method
             b'\x00\x0D'  # extensions.extension_type
             b''  # extensions.extension_data
         )

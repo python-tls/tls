@@ -36,6 +36,13 @@ class ClientHello(object):
     """
 
 
+@attributes(['major', 'minor'])
+class ServerVersion(object):
+    """
+    An object representing a ServerVersion struct.
+    """
+
+
 @attributes(['server_version', 'random', 'session_id', 'cipher_suite',
              'compression_method', 'extensions'])
 class ServerHello(object):
@@ -87,3 +94,21 @@ def parse_server_hello(bytes):
     :param bytes: the bytes representing the input.
     :return: ServerHello object.
     """
+    construct = _constructs.ServerHello.parse(bytes)
+    return ServerHello(
+        server_version=ServerVersion(
+            major=construct.server_version.major,
+            minor=construct.server_version.minor,
+        ),
+        random=Random(
+            gmt_unix_time=construct.random.gmt_unix_time,
+            random_bytes=construct.random.random_bytes,
+        ),
+        session_id=construct.session_id,
+        cipher_suite=construct.cipher_suite,
+        compression_method=CompressionMethod(construct.compression_method),
+        extensions=Extension(
+            extension_type=ExtensionType(construct.extensions.extension_type),
+            extension_data=construct.extensions.extension_data
+        )
+    )
