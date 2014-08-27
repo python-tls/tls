@@ -61,7 +61,9 @@ def parse_certificate_request(bytes):
         certificate_types=ClientCertificateType(construct.certificate_types),
         supported_signature_algorithms=SignatureAndHashAlgorithm(
             hash=HashAlgorithm(construct.supported_signature_algorithms.hash),
-            signature=SignatureAlgorithm(construct.supported_signature_algorithms.signature),
+            signature=SignatureAlgorithm(
+                construct.supported_signature_algorithms.signature
+            ),
         ),
         certificate_authorities=construct.certificate_authorities
     )

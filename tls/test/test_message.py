@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.message import (
-    ClientCertificateType, HashAlgorithm, SignatureAlgorithm, parse_certificate_request
+    ClientCertificateType, HashAlgorithm, SignatureAlgorithm,
+    parse_certificate_request
 )
 
 
@@ -20,5 +21,6 @@ class TestCertificateRequestParsing(object):
         record = parse_certificate_request(packet)
         assert record.certificate_types == ClientCertificateType.RSA_SIGN
         assert record.supported_signature_algorithms.hash == HashAlgorithm.MD5
-        assert record.supported_signature_algorithms.signature == SignatureAlgorithm.RSA
+        assert record.supported_signature_algorithms.signature == \
+            SignatureAlgorithm.RSA
         assert record.certificate_authorities == []
