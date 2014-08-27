@@ -4,10 +4,12 @@ from enum import Enum
 
 from characteristic import attributes
 
+from tls import _constructs
+
 
 class ClientCertificateType(Enum):
     RSA_SIGN = 1
-    DSS_SIG = 2
+    DSS_SIGN = 2
     RSA_FIXED_DH = 3
     DSS_FIXED_DH = 4
     RSA_EPHEMERAL_DH_RESERVED = 5
@@ -40,6 +42,13 @@ class CertificateRequest(object):
     """
 
 
+@attributes(['hash', 'signature'])
+class SignatureAndHashAlgorithm(object):
+    """
+    An object representing a SignatureAndHashAlgorithm struct.
+    """
+
+
 def parse_certificate_request(bytes):
     """
     Parse a ``CertificateRequest`` struct.
@@ -47,3 +56,12 @@ def parse_certificate_request(bytes):
     :param bytes: the bytes representing the input.
     :return: CertificateRequest object.
     """
+    construct = _constructs.CertificateRequest.parse(bytes)
+    return CertificateRequest(
+        certificate_types=ClientCertificateType(construct.certificate_types),
+        supported_signature_algorithms=SignatureAndHashAlgorithm(
+            hash=HashAlgorithm(construct.supported_signature_algorithms.hash),
+            signature=SignatureAlgorithm(construct.supported_signature_algorithms.signature),
+        ),
+        certificate_authorities=construct.certificate_authorities
+    )

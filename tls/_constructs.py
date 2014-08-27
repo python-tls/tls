@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from construct import Bytes, Struct, UBInt16, UBInt8
+from construct import Array, Bytes, Struct, UBInt16, UBInt8
 
 
 ProtocolVersion = Struct(
@@ -39,11 +39,22 @@ SignatureAndHashAlgorithm = Struct(
     UBInt8("signature"),
 )
 
-DistinguishedName = Bytes("certificate_authorities", 65535)
+# XXX: A list of the distinguished names [X501] of acceptable
+#      certificate_authorities, represented in DER-encoded format.  These
+#      distinguished names may specify a desired distinguished name for a
+#      root CA or for a subordinate CA; thus, this message can be used to
+#      describe known roots as well as a desired authorization space.  If
+#      the certificate_authorities list is empty, then the client MAY
+#      send any certificate of the appropriate ClientCertificateType,
+#      unless there is some external arrangement to the contrary.
+
+# TODO: An empty list for now.
+
+DistinguishedName = Array(0, UBInt8("certificate_authorities"))
 
 CertificateRequest = Struct(
     "CertificateRequest",
-    UBInt8("certificate_types"),  # XXX: I think this is a list or something. Check.
+    UBInt8("certificate_types"),  # TODO: Maybe a list of variable length.
     SignatureAndHashAlgorithm,
     DistinguishedName,
 )
