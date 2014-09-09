@@ -4,6 +4,8 @@ from enum import Enum
 
 from characteristic import attributes
 
+from six import BytesIO
+
 from tls import _constructs
 
 
@@ -21,7 +23,7 @@ class Random(object):
     """
 
 
-@attributes(['extension_type', 'extension_data'])
+@attributes(['type', 'data'])
 class Extension(object):
     """
     An object representing an Extension struct.
@@ -34,6 +36,11 @@ class ClientHello(object):
     """
     An object representing a ClientHello message.
     """
+
+
+class ExtensionType(Enum):
+    SIGNATURE_ALGORITHMS = 13
+    # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
 
 
 @attributes(['major', 'minor'])
@@ -55,11 +62,6 @@ class CompressionMethod(Enum):
     NULL = 0
 
 
-class ExtensionType(Enum):
-    SIGNATURE_ALGORITHMS = 13
-    # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
-
-
 def parse_client_hello(bytes):
     """
     Parse a ``ClientHello`` struct.
@@ -68,6 +70,15 @@ def parse_client_hello(bytes):
     :return: ClientHello object.
     """
     construct = _constructs.ClientHello.parse(bytes)
+    # XXX Is there a better way in Construct to parse an array of
+    # variable-length structs?
+    extensions = []
+    extensions_io = BytesIO(construct.extensions_bytes)
+    while extensions_io.tell() < construct.extensions_length:
+        extension_construct = _constructs.Extension.parse_stream(extensions_io)
+        extensions.append(
+            Extension(type=ExtensionType(extension_construct.type),
+                      data=extension_construct.data))
     return ClientHello(
         client_version=ClientVersion(
             major=construct.client_version.major,
@@ -77,13 +88,11 @@ def parse_client_hello(bytes):
             gmt_unix_time=construct.random.gmt_unix_time,
             random_bytes=construct.random.random_bytes,
         ),
-        session_id=construct.session_id,
-        cipher_suites=construct.cipher_suites,
-        compression_methods=CompressionMethod(construct.compression_methods),
-        extensions=Extension(
-            extension_type=ExtensionType(construct.extensions.extension_type),
-            extension_data=construct.extensions.extension_data
-        )
+        session_id=construct.session_id.session_id,
+        # TODO: cipher suites should be enums
+        cipher_suites=construct.cipher_suites.cipher_suites,
+        compression_methods=construct.compression_methods.compression_methods,
+        extensions=extensions,
     )
 
 
