@@ -36,9 +36,6 @@ class ClientHello(object):
     """
 
 
-class CompressionMethod(Enum):
-    NULL = 0
-
 
 class ExtensionType(Enum):
     SIGNATURE_ALGORITHMS = 13
