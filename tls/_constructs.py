@@ -45,35 +45,29 @@ Random = Struct(
     Bytes("random_bytes", 28),
 )
 
-SessionID = Bytes("session_id", 32)
-
-CipherSuite = Array(2, UBInt8("cipher_suites"))
+SessionID = Struct(
+    "session_id",
+    UBInt8("length"),
+    Bytes("session_id", lambda ctx: ctx.length))
 
 CipherSuites = Struct(
     "cipher_suites",
-    UBInt16("length"),
-    Array(lambda ctx: ctx.length, CipherSuite)
+    UBInt16("length"),  # TODO: Reject packets of length 0
+    Array(lambda ctx: ctx.length / 2, Bytes("cipher_suites", 2))
 )
 
 CompressionMethods = Struct(
     "compression_methods",
-    UBInt8("length"),
+    UBInt8("length"),  # TODO: Reject packets of length 0
     Array(lambda ctx: ctx.length, UBInt8("compression_methods"))
 )
 
 Extension = Struct(
     "extensions",
-    UBInt16("extension_type"),
-    Bytes("extension_data", 0),
-    # TODO: Make this <0 - 65535>
-)
-
-Extensions = Struct(
-    "extensions",
+    UBInt16("type"),
     UBInt16("length"),
-    Array(lambda ctx: ctx.length, Extension),
+    Bytes("data", lambda ctx: ctx.length),
 )
-
 
 ClientHello = Struct(
     "ClientHello",
@@ -82,5 +76,6 @@ ClientHello = Struct(
     SessionID,
     CipherSuites,
     CompressionMethods,
-    Extensions,
+    UBInt16("extensions_length"),
+    Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
 )
