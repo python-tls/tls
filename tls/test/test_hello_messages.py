@@ -59,4 +59,4 @@ class TestClientHello(object):
         record = parse_client_hello(packet)
         assert len(record.extensions) == 1
         assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
-        assert record.extensions[0].data == 'abcd'
+        assert record.extensions[0].data == b'abcd'
