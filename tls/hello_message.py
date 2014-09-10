@@ -81,8 +81,8 @@ def parse_client_hello(bytes):
                       data=extension_construct.data))
     return ClientHello(
         client_version=ClientVersion(
-            major=construct.client_version.major,
-            minor=construct.client_version.minor,
+            major=construct.version.major,
+            minor=construct.version.minor,
         ),
         random=Random(
             gmt_unix_time=construct.random.gmt_unix_time,
@@ -104,20 +104,26 @@ def parse_server_hello(bytes):
     :return: ServerHello object.
     """
     construct = _constructs.ServerHello.parse(bytes)
+    # XXX Is there a better way in Construct to parse an array of
+    # variable-length structs?
+    extensions = []
+    extensions_io = BytesIO(construct.extensions_bytes)
+    while extensions_io.tell() < construct.extensions_length:
+        extension_construct = _constructs.Extension.parse_stream(extensions_io)
+        extensions.append(
+            Extension(type=ExtensionType(extension_construct.type),
+                      data=extension_construct.data))
     return ServerHello(
         server_version=ServerVersion(
-            major=construct.server_version.major,
-            minor=construct.server_version.minor,
+            major=construct.version.major,
+            minor=construct.version.minor,
         ),
         random=Random(
             gmt_unix_time=construct.random.gmt_unix_time,
             random_bytes=construct.random.random_bytes,
         ),
-        session_id=construct.session_id,
+        session_id=construct.session_id.session_id,
         cipher_suite=construct.cipher_suite,
         compression_method=CompressionMethod(construct.compression_method),
-        extensions=Extension(
-            extension_type=ExtensionType(construct.extensions.extension_type),
-            extension_data=construct.extensions.extension_data
-        )
+        extensions=extensions,
     )

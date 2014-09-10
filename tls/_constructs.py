@@ -33,12 +33,6 @@ TLSCiphertext = Struct(
     Bytes("fragment", lambda ctx: ctx.length),
 )
 
-ClientVersion = Struct(
-    "client_version",
-    UBInt8("major"),
-    UBInt8("minor")
-)
-
 Random = Struct(
     "random",
     UBInt32("gmt_unix_time"),
@@ -71,7 +65,7 @@ Extension = Struct(
 
 ClientHello = Struct(
     "ClientHello",
-    ClientVersion,
+    ProtocolVersion,
     Random,
     SessionID,
     CipherSuites,
@@ -80,20 +74,14 @@ ClientHello = Struct(
     Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
 )
 
-ServerVersion = Struct(
-    "server_version",
-    UBInt8("major"),
-    UBInt8("minor")
-)
-
-CipherSuiteForServer = Array(2, UBInt8("cipher_suite"))
 
 ServerHello = Struct(
     "ServerHello",
-    ServerVersion,
+    ProtocolVersion,
     Random,
     SessionID,
-    CipherSuiteForServer,
+    Bytes("cipher_suite", 2),
     UBInt8("compression_method"),
-    Extension,
+    UBInt16("extensions_length"),
+    Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
 )

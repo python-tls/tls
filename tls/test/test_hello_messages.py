@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.hello_message import (
-    ClientHello, ExtensionType, ServerHello, parse_client_hello,
+    ClientHello, CompressionMethod, ExtensionType, ServerHello, parse_client_hello,
     parse_server_hello
 )
 
@@ -77,11 +77,13 @@ class TestServerHello(object):
             b'\x03\x00'  # server_version
             b'\x01\x02\x03\x04'  # random.gmt_unix_time
             b'0123456789012345678901234567'  # random.random_bytes
+            b'\x20'  # session_id.length
             b'01234567890123456789012345678901'  # session_id
-            b'\x01\x02'  # cipher_suite
+            b'\x00\x6B'  # cipher_suite
             b'\x00'  # compression_method
-            b'\x00\x0D'  # extensions.extension_type
-            b''  # extensions.extension_data
+            b'\x00\x00'  # extensions.length
+            b''  # extensions.extension_type
+            b''  # extensions.extensions
         )
         record = parse_server_hello(packet)
         assert isinstance(record, ServerHello)
@@ -90,8 +92,6 @@ class TestServerHello(object):
         assert record.random.gmt_unix_time == 16909060
         assert record.random.random_bytes == b'0123456789012345678901234567'
         assert record.session_id == b'01234567890123456789012345678901'
-        assert record.cipher_suite == [1, 2]
+        assert record.cipher_suite == b'\x00\x6B'
         assert record.compression_method == CompressionMethod.NULL
-        assert record.extensions.extension_type == \
-            ExtensionType.SIGNATURE_ALGORITHMS
-        assert record.extensions.extension_data == b''
+        assert len(record.extensions) == 0
