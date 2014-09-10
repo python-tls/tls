@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.hello_message import (
-    ClientHello, CompressionMethod, ExtensionType, ServerHello, parse_client_hello,
-    parse_server_hello
+    ClientHello, CompressionMethod, ExtensionType, ServerHello,
+    parse_client_hello, parse_server_hello
 )
 
 
