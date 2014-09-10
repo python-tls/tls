@@ -62,8 +62,8 @@ def parse_client_hello(bytes):
                       data=extension_construct.data))
     return ClientHello(
         client_version=ClientVersion(
-            major=construct.client_version.major,
-            minor=construct.client_version.minor,
+            major=construct.version.major,
+            minor=construct.version.minor,
         ),
         random=Random(
             gmt_unix_time=construct.random.gmt_unix_time,
