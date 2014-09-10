@@ -95,3 +95,26 @@ class TestServerHello(object):
         assert record.cipher_suite == b'\x00\x6B'
         assert record.compression_method == CompressionMethod.NULL
         assert len(record.extensions) == 0
+
+    def test_parse_server_hello_extensions(self):
+        """
+        :func:`parse_server_hello` returns an instance of
+        :class:`ServerHello`.
+        """
+        packet = (
+            b'\x03\x00'  # server_version
+            b'\x01\x02\x03\x04'  # random.gmt_unix_time
+            b'0123456789012345678901234567'  # random.random_bytes
+            b'\x20'  # session_id.length
+            b'01234567890123456789012345678901'  # session_id
+            b'\x00\x6B'  # cipher_suite
+            b'\x00'  # compression_method
+            b'\x00\x08'  # extensions.length
+            b'\x00\x0D'  # extensions.extensions.extension_type
+            b'\x00\x04'  # extensions.extensions.extensions_data length
+            b'abcd'  # extensions.extensions.extension_data
+        )
+        record = parse_server_hello(packet)
+        assert len(record.extensions) == 1
+        assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
+        assert record.extensions[0].data == b'abcd'

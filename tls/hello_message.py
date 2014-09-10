@@ -104,8 +104,7 @@ def parse_server_hello(bytes):
     :return: ServerHello object.
     """
     construct = _constructs.ServerHello.parse(bytes)
-    # XXX Is there a better way in Construct to parse an array of
-    # variable-length structs?
+    # XXX: Find a better way to parse extensions
     extensions = []
     extensions_io = BytesIO(construct.extensions_bytes)
     while extensions_io.tell() < construct.extensions_length:
