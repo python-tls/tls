@@ -55,6 +55,9 @@ CertificateRequest = Struct(
     "CertificateRequest",
     ClientCertificateType,
     UBInt16("supported_signature_algorithms_length"),
-    Array(lambda ctx: ctx.supported_signature_algorithms_length / 2, SignatureAndHashAlgorithm),
+    Array(
+        lambda ctx: ctx.supported_signature_algorithms_length / 2,
+        SignatureAndHashAlgorithm
+    ),
     DistinguishedName,
 )

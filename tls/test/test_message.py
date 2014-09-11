@@ -24,7 +24,8 @@ class TestCertificateRequestParsing(object):
         record = parse_certificate_request(packet)
         assert record.certificate_types == [ClientCertificateType.RSA_SIGN]
         assert len(record.supported_signature_algorithms) == 1
-        assert record.supported_signature_algorithms[0].hash == HashAlgorithm.MD5
+        assert record.supported_signature_algorithms[0].hash == \
+            HashAlgorithm.MD5
         assert record.supported_signature_algorithms[0].signature == \
             SignatureAlgorithm.RSA
         assert record.certificate_authorities == ''

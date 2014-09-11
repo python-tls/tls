@@ -70,6 +70,7 @@ def parse_certificate_request(bytes):
         )
             for algorithm in construct.supported_signature_algorithms
         ],
-        certificate_authorities=\
+        certificate_authorities=(
             construct.certificate_authorities.certificate_authorities
+        )
     )
