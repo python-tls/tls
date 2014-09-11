@@ -12,7 +12,7 @@ from tls import _constructs
 @attributes(['major', 'minor'])
 class ProtocolVersion(object):
     """
-    An object representing a ClientVersion struct.
+    An object representing a ProtocolVersion struct.
     """
 
 
