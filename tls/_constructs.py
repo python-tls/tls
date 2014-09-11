@@ -33,28 +33,28 @@ TLSCiphertext = Struct(
     Bytes("fragment", lambda ctx: ctx.length),
 )
 
+ClientCertificateType = Struct(
+    "certificate_types",
+    UBInt8("length"),  # TODO: Reject packets of length 0
+    Array(lambda ctx: ctx.length, UBInt8("certificate_types")),
+)
+
 SignatureAndHashAlgorithm = Struct(
     "supported_signature_algorithms",
     UBInt8("hash"),
     UBInt8("signature"),
 )
 
-# XXX: A list of the distinguished names [X501] of acceptable
-#      certificate_authorities, represented in DER-encoded format.  These
-#      distinguished names may specify a desired distinguished name for a
-#      root CA or for a subordinate CA; thus, this message can be used to
-#      describe known roots as well as a desired authorization space.  If
-#      the certificate_authorities list is empty, then the client MAY
-#      send any certificate of the appropriate ClientCertificateType,
-#      unless there is some external arrangement to the contrary.
-
-# TODO: An empty list for now.
-
-DistinguishedName = Array(0, UBInt8("certificate_authorities"))
+DistinguishedName = Struct(
+    "certificate_authorities",
+    UBInt16("length"),
+    Bytes("certificate_authorities", lambda ctx: ctx.length)
+)
 
 CertificateRequest = Struct(
     "CertificateRequest",
-    UBInt8("certificate_types"),  # TODO: Maybe a list of variable length.
-    SignatureAndHashAlgorithm,
+    ClientCertificateType,
+    UBInt16("supported_signature_algorithms_length"),
+    Array(lambda ctx: ctx.supported_signature_algorithms_length / 2, SignatureAndHashAlgorithm),
     DistinguishedName,
 )
