@@ -67,7 +67,9 @@ def parse_certificate_request(bytes):
                 hash=HashAlgorithm(algorithm.hash),
                 signature=SignatureAlgorithm(algorithm.signature),
             )
-            for algorithm in construct.supported_signature_algorithms
+            for algorithm in (
+                construct.supported_signature_algorithms.algorithms
+            )
         ],
         certificate_authorities=(
             construct.certificate_authorities.certificate_authorities

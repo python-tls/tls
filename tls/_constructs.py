@@ -40,9 +40,19 @@ ClientCertificateType = Struct(
 )
 
 SignatureAndHashAlgorithm = Struct(
-    "supported_signature_algorithms",
+    "algorithms",
     UBInt8("hash"),
     UBInt8("signature"),
+)
+
+SupportedSignatureAlgorithms = Struct(
+    "supported_signature_algorithms",
+    UBInt16("supported_signature_algorithms_length"),
+    # TODO: Reject packets of length 0
+    Array(
+        lambda ctx: ctx.supported_signature_algorithms_length / 2,
+        SignatureAndHashAlgorithm,
+    ),
 )
 
 DistinguishedName = Struct(
@@ -54,11 +64,6 @@ DistinguishedName = Struct(
 CertificateRequest = Struct(
     "CertificateRequest",
     ClientCertificateType,
-    UBInt16("supported_signature_algorithms_length"),
-    # TODO: Reject packets of length 0
-    Array(
-        lambda ctx: ctx.supported_signature_algorithms_length / 2,
-        SignatureAndHashAlgorithm
-    ),
+    SupportedSignatureAlgorithms,
     DistinguishedName,
 )
