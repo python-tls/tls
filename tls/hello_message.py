@@ -10,7 +10,7 @@ from tls import _constructs
 
 
 @attributes(['major', 'minor'])
-class ClientVersion(object):
+class ProtocolVersion(object):
     """
     An object representing a ClientVersion struct.
     """
@@ -43,13 +43,6 @@ class ExtensionType(Enum):
     # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
 
 
-@attributes(['major', 'minor'])
-class ServerVersion(object):
-    """
-    An object representing a ServerVersion struct.
-    """
-
-
 @attributes(['server_version', 'random', 'session_id', 'cipher_suite',
              'compression_method', 'extensions'])
 class ServerHello(object):
@@ -80,7 +73,7 @@ def parse_client_hello(bytes):
             Extension(type=ExtensionType(extension_construct.type),
                       data=extension_construct.data))
     return ClientHello(
-        client_version=ClientVersion(
+        client_version=ProtocolVersion(
             major=construct.version.major,
             minor=construct.version.minor,
         ),
@@ -113,7 +106,7 @@ def parse_server_hello(bytes):
             Extension(type=ExtensionType(extension_construct.type),
                       data=extension_construct.data))
     return ServerHello(
-        server_version=ServerVersion(
+        server_version=ProtocolVersion(
             major=construct.version.major,
             minor=construct.version.minor,
         ),
