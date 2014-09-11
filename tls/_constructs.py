@@ -42,7 +42,8 @@ Random = Struct(
 SessionID = Struct(
     "session_id",
     UBInt8("length"),
-    Bytes("session_id", lambda ctx: ctx.length))
+    Bytes("session_id", lambda ctx: ctx.length)
+)
 
 CipherSuites = Struct(
     "cipher_suites",
