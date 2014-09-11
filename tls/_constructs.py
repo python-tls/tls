@@ -55,6 +55,7 @@ CertificateRequest = Struct(
     "CertificateRequest",
     ClientCertificateType,
     UBInt16("supported_signature_algorithms_length"),
+    # TODO: Reject packets of length 0
     Array(
         lambda ctx: ctx.supported_signature_algorithms_length / 2,
         SignatureAndHashAlgorithm
