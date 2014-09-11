@@ -28,4 +28,4 @@ class TestCertificateRequestParsing(object):
             HashAlgorithm.MD5
         assert record.supported_signature_algorithms[0].signature == \
             SignatureAlgorithm.RSA
-        assert record.certificate_authorities == ''
+        assert record.certificate_authorities == b''
