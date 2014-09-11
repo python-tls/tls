@@ -10,9 +10,9 @@ from tls import _constructs
 
 
 @attributes(['major', 'minor'])
-class ClientVersion(object):
+class ProtocolVersion(object):
     """
-    An object representing a ClientVersion struct.
+    An object representing a ProtocolVersion struct.
     """
 
 
@@ -61,7 +61,7 @@ def parse_client_hello(bytes):
             Extension(type=ExtensionType(extension_construct.type),
                       data=extension_construct.data))
     return ClientHello(
-        client_version=ClientVersion(
+        client_version=ProtocolVersion(
             major=construct.version.major,
             minor=construct.version.minor,
         ),
