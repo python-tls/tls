@@ -57,6 +57,7 @@ class Certificate(object):
     An object representing a Certificate struct.
     """
 
+
 def parse_certificate_request(bytes):
     """
     Parse a ``CertificateRequest`` struct.
@@ -83,6 +84,7 @@ def parse_certificate_request(bytes):
             construct.certificate_authorities.certificate_authorities
         )
     )
+
 
 def parse_certificate(bytes):
     """

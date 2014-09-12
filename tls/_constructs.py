@@ -128,7 +128,7 @@ ASN1Cert = Struct(
 )
 
 Certificate = Struct(
-    "Certificate",
-    UBInt32("certificates_length"),  # TODO: Reject packets with length > 2 ** 24 - 1
+    "Certificate",  # TODO: Reject packets with length > 2 ** 24 - 1
+    UBInt32("certificates_length"),
     Bytes("certificates_bytes", lambda ctx: ctx.certificates_length),
 )

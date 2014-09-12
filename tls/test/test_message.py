@@ -52,8 +52,8 @@ class TestCertificateParsing(object):
     def test_parse_certificate(self):
         packet = (
             b'\x00\x00\x00\x07'  # certificate_length
-            b'\x00\x00\x00\x03'  # certificate.certificate_list.asn1_cert length
-            b'ABC'  # certificate.certificate_list.asn1_cert
+            b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
+            b'ABC'  # certificate_list.asn1_cert
         )
         record = parse_certificate(packet)
         assert isinstance(record, Certificate)
