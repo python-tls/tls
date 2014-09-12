@@ -29,3 +29,16 @@ class TestCertificateRequestParsing(object):
         assert record.supported_signature_algorithms[0].signature == \
             SignatureAlgorithm.RSA
         assert record.certificate_authorities == b''
+
+    def test_parse_certificate_request_with_authorities(self):
+        packet = (
+            b'\x01'  # certificate_types length
+            b'\x01'  # certificate_types
+            b'\x00\x02'  # supported_signature_algorithms length
+            b'\x01'  # supported_signature_algorithms.hash
+            b'\x01'  # supported_signature_algorithms.signature
+            b'\x00\x02'  # certificate_authorities length
+            b'03'  # certificate_authorities
+        )
+        record = parse_certificate_request(packet)
+        assert record.certificate_authorities == b'03'
