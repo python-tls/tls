@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-from construct import Bytes, Struct, UBInt16, UBInt8
+from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 
 
 ProtocolVersion = Struct(
@@ -31,4 +31,46 @@ TLSCiphertext = Struct(
     ProtocolVersion,
     UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 2048
     Bytes("fragment", lambda ctx: ctx.length),
+)
+
+Random = Struct(
+    "random",
+    UBInt32("gmt_unix_time"),
+    Bytes("random_bytes", 28),
+)
+
+SessionID = Struct(
+    "session_id",
+    UBInt8("length"),
+    Bytes("session_id", lambda ctx: ctx.length)
+)
+
+CipherSuites = Struct(
+    "cipher_suites",
+    UBInt16("length"),  # TODO: Reject packets of length 0
+    Array(lambda ctx: ctx.length / 2, Bytes("cipher_suites", 2))
+)
+
+CompressionMethods = Struct(
+    "compression_methods",
+    UBInt8("length"),  # TODO: Reject packets of length 0
+    Array(lambda ctx: ctx.length, UBInt8("compression_methods"))
+)
+
+Extension = Struct(
+    "extensions",
+    UBInt16("type"),
+    UBInt16("length"),
+    Bytes("data", lambda ctx: ctx.length),
+)
+
+ClientHello = Struct(
+    "ClientHello",
+    ProtocolVersion,
+    Random,
+    SessionID,
+    CipherSuites,
+    CompressionMethods,
+    UBInt16("extensions_length"),
+    Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
 )
