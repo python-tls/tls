@@ -74,3 +74,15 @@ ClientHello = Struct(
     UBInt16("extensions_length"),
     Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
 )
+
+
+ServerHello = Struct(
+    "ServerHello",
+    ProtocolVersion,
+    Random,
+    SessionID,
+    Bytes("cipher_suite", 2),
+    UBInt8("compression_method"),
+    UBInt16("extensions_length"),
+    Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
+)
