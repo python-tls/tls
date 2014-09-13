@@ -75,7 +75,6 @@ ClientHello = Struct(
     Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
 )
 
-
 ServerHello = Struct(
     "ServerHello",
     ProtocolVersion,
@@ -85,4 +84,39 @@ ServerHello = Struct(
     UBInt8("compression_method"),
     UBInt16("extensions_length"),
     Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
+)
+
+ClientCertificateType = Struct(
+    "certificate_types",
+    UBInt8("length"),  # TODO: Reject packets of length 0
+    Array(lambda ctx: ctx.length, UBInt8("certificate_types")),
+)
+
+SignatureAndHashAlgorithm = Struct(
+    "algorithms",
+    UBInt8("hash"),
+    UBInt8("signature"),
+)
+
+SupportedSignatureAlgorithms = Struct(
+    "supported_signature_algorithms",
+    UBInt16("supported_signature_algorithms_length"),
+    # TODO: Reject packets of length 0
+    Array(
+        lambda ctx: ctx.supported_signature_algorithms_length / 2,
+        SignatureAndHashAlgorithm,
+    ),
+)
+
+DistinguishedName = Struct(
+    "certificate_authorities",
+    UBInt16("length"),
+    Bytes("certificate_authorities", lambda ctx: ctx.length)
+)
+
+CertificateRequest = Struct(
+    "CertificateRequest",
+    ClientCertificateType,
+    SupportedSignatureAlgorithms,
+    DistinguishedName,
 )
