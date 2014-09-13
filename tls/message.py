@@ -6,6 +6,8 @@ from characteristic import attributes
 
 from tls import _constructs
 
+from tls.hello_message import ProtocolVersion
+
 
 class ClientCertificateType(Enum):
     RSA_SIGN = 1
@@ -49,6 +51,13 @@ class SignatureAndHashAlgorithm(object):
     """
 
 
+@attributes(['client_version', 'random'])
+class PreMasterSecret(object):
+    """
+    An object representing a PreMasterSecret struct.
+    """
+
+
 def parse_certificate_request(bytes):
     """
     Parse a ``CertificateRequest`` struct.
@@ -75,3 +84,22 @@ def parse_certificate_request(bytes):
             construct.certificate_authorities.certificate_authorities
         )
     )
+
+
+def parse_pre_master_secret(bytes):
+    """
+    Parse a ``PreMasterSecret`` struct.
+
+    :param bytes: the bytes representing the input.
+    :return: CertificateRequest object.
+    """
+    construct = _constructs.PreMasterSecret.parse(bytes)
+    return PreMasterSecret(
+        client_version=ProtocolVersion(
+            major=construct.version.major,
+            minor=construct.version.minor,
+        ),
+        random=construct.random_bytes,
+    )
+
+

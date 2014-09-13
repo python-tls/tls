@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from construct import Container
+
 from enum import Enum
 
 from characteristic import attributes
@@ -28,6 +30,9 @@ class Extension(object):
     """
     An object representing an Extension struct.
     """
+    def as_bytes(self):
+        return _constructs.Extension.build(Container(
+            type=self.type, length=len(self.data), data=self.data))
 
 
 @attributes(['client_version', 'random', 'session_id', 'cipher_suites',
@@ -36,6 +41,22 @@ class ClientHello(object):
     """
     An object representing a ClientHello message.
     """
+    def as_bytes(self):
+        return _constructs.ClientHello.build(Container(
+            version=Container(major=self.client_version.major,
+                              minor=self.client_version.minor),
+            random=Container(gmt_unix_time=self.random.gmt_unix_time,
+                             random_bytes=self.random.random_bytes),
+            session_id=Container(length=len(self.session_id),
+                                 session_id=self.session_id),
+            cipher_suites=Container(length=len(self.cipher_suites) * 2,
+                                    cipher_suites=self.cipher_suites),
+            compression_methods=Container(
+                length=len(self.compression_methods),
+                compression_methods=self.compression_methods),
+            extensions_length=len(self.extensions),
+            extensions_bytes=''.join(
+                [ext.as_bytes() for ext in self.extensions])))
 
 
 class ExtensionType(Enum):

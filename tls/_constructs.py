@@ -120,3 +120,20 @@ CertificateRequest = Struct(
     SupportedSignatureAlgorithms,
     DistinguishedName,
 )
+
+PreMasterSecret = Struct(
+    "pre_master_secret",
+    ProtocolVersion,
+    Bytes("random_bytes", 46),
+)
+
+
+CKEWithEncryptedPreMasterSecret = Struct(
+    "ClientKeyExchange",
+    UBInt16("length")
+    Bytes("EncryptedPreMasterSecret", lambda ctx: ctx.length),
+    # Because reasons: See "Implementation note" in
+    # http://tools.ietf.org/html/rfc5246#section-7.4.7.1
+)
+
+
