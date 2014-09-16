@@ -120,3 +120,9 @@ CertificateRequest = Struct(
     SupportedSignatureAlgorithms,
     DistinguishedName,
 )
+
+PreMasterSecret = Struct(
+    "pre_master_secret",
+    ProtocolVersion,
+    Bytes("random_bytes", 46),
+)
