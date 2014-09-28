@@ -36,7 +36,7 @@ class TestClientHello(object):
         b'\x00\x6B'  # cipher_suites
         b'\x01'  # compression_methods length
         b'\x00'  # compression_methods
-        b'\x00\x08'  # extensions.length
+        b'\x00\x08'  # extensions length
         b'\x00\x0D'  # extensions.extensions.extension_type
         b'\x00\x04'  # extensions.extensions.extensions_data length
         b'abcd'  # extensions.extensions.extension_data
@@ -64,6 +64,13 @@ class TestClientHello(object):
         """
         record = parse_client_hello(self.no_extensions_packet)
         assert record.as_bytes() == self.no_extensions_packet
+
+    def test_as_bytes_with_extensions(self):
+        """
+        :func:`ClientHello.as_bytes` returns the bytes it was created with
+        """
+        record = parse_client_hello(self.extensions_packet)
+        assert record.as_bytes() == self.extensions_packet
 
     def test_parse_client_hello_extensions(self):
         record = parse_client_hello(self.extensions_packet)
