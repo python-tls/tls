@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from construct import Container
-
 from enum import Enum
 
 from characteristic import attributes
+
+from construct import Container
 
 from six import BytesIO
 
@@ -42,26 +42,24 @@ class ClientHello(object):
     An object representing a ClientHello message.
     """
     def as_bytes(self):
-
         return _constructs.ClientHello.build(
             Container(
                 version=Container(major=self.client_version.major,
-                                minor=self.client_version.minor),
+                                  minor=self.client_version.minor),
                 random=Container(
                     gmt_unix_time=self.random.gmt_unix_time,
                     random_bytes=self.random.random_bytes
                 ),
                 session_id=Container(length=len(self.session_id),
-                                    session_id=self.session_id),
+                                     session_id=self.session_id),
                 cipher_suites=Container(length=len(self.cipher_suites) * 2,
                                         cipher_suites=self.cipher_suites),
                 compression_methods=Container(
                     length=len(self.compression_methods),
                     compression_methods=self.compression_methods
                 ),
-                extensions_length=sum([2+2+len(ext.data)
-                                   for ext in self.extensions]),
-
+                extensions_length=sum([2 + 2 + len(ext.data)
+                                       for ext in self.extensions]),
                 extensions_bytes=''.join(
                     [ext.as_bytes() for ext in self.extensions]
                 )
@@ -80,6 +78,26 @@ class ServerHello(object):
     """
     An object representing a ServerHello message.
     """
+    def as_bytes(self):
+        return _constructs.ServerHello.build(
+            Container(
+                version=Container(major=self.server_version.major,
+                                  minor=self.server_version.minor),
+                random=Container(
+                    gmt_unix_time=self.random.gmt_unix_time,
+                    random_bytes=self.random.random_bytes
+                ),
+                session_id=Container(length=len(self.session_id),
+                                     session_id=self.session_id),
+                cipher_suite=self.cipher_suite,
+                compression_method=self.compression_method.value,
+                extensions_length=sum([2 + 2 + len(ext.data)
+                                       for ext in self.extensions]),
+                extensions_bytes=''.join(
+                    [ext.as_bytes() for ext in self.extensions]
+                )
+            )
+        )
 
 
 class CompressionMethod(Enum):
