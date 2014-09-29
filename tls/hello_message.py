@@ -60,7 +60,7 @@ class ClientHello(object):
                 ),
                 extensions_length=sum([2 + 2 + len(ext.data)
                                        for ext in self.extensions]),
-                extensions_bytes=''.join(
+                extensions_bytes=b''.join(
                     [ext.as_bytes() for ext in self.extensions]
                 )
             )
@@ -93,7 +93,7 @@ class ServerHello(object):
                 compression_method=self.compression_method.value,
                 extensions_length=sum([2 + 2 + len(ext.data)
                                        for ext in self.extensions]),
-                extensions_bytes=''.join(
+                extensions_bytes=b''.join(
                     [ext.as_bytes() for ext in self.extensions]
                 )
             )
