@@ -6,6 +6,8 @@ from characteristic import attributes
 
 from tls import _constructs
 
+from tls.hello_message import parse_server_hello, parse_client_hello
+
 
 class ClientCertificateType(Enum):
     RSA_SIGN = 1
@@ -34,6 +36,31 @@ class SignatureAlgorithm(Enum):
     ECDSA = 3
 
 
+class HandshakeType(Enum):
+    HELLO_REQUEST = 0
+    CLIENT_HELLO = 1
+    SERVER_HELLO = 2
+    CERTIFICATE = 11
+    SERVER_KEY_EXCHANGE = 12
+    CERTIFICATE_REQUEST = 13
+    SERVER_HELLO_DONE = 14
+    CERTIFICATE_VERIFY = 15
+    CLIENT_KEY_EXCHANGE = 16
+    FINISHED = 20
+
+
+class HelloRequest(object):
+    """
+    An object representing a HelloRequest struct.
+    """
+
+
+class ServerHelloDone(object):
+    """
+    An object representing a ServerHelloDone struct.
+    """
+
+
 @attributes(['certificate_types', 'supported_signature_algorithms',
              'certificate_authorities'])
 class CertificateRequest(object):
@@ -46,6 +73,13 @@ class CertificateRequest(object):
 class SignatureAndHashAlgorithm(object):
     """
     An object representing a SignatureAndHashAlgorithm struct.
+    """
+
+
+@attributes(['msg_type', 'length', 'body'])
+class Handshake(object):
+    """
+    An object representing a Handshake struct.
     """
 
 
@@ -74,4 +108,47 @@ def parse_certificate_request(bytes):
         certificate_authorities=(
             construct.certificate_authorities.certificate_authorities
         )
+    )
+
+
+_handshake_message_parser = {
+#    0: parse_hello_request,
+    1: parse_client_hello,
+    2: parse_server_hello,
+#    11: parse_certificate,
+#    12: parse_server_key_exchange,
+    13: parse_certificate_request,
+#    14: parse_server_hello_done,
+#    15: parse_certificate_verify,
+#    16: parse_client_key_exchange,
+#    20: parse_finished,
+}
+
+
+def _get_handshake_message(msg_type, body):
+    try:
+        if msg_type == 0:
+            return HelloRequest()
+        elif msg_type == 14:
+            return ServerHelloDone()
+        elif msg_type in [11, 12, 15, 16, 20]:
+            raise NotImplementedError
+        else:
+            return _handshake_message_parser[msg_type](body)
+    except NotImplementedError:
+        return None     # TODO
+
+
+def parse_handshake_struct(bytes):
+    """
+    Parse a ``Handshake`` struct.
+
+    :param bytes: the bytes representing the input.
+    :return: Handshake object.
+    """
+    construct = _constructs.Handshake.parse(bytes)
+    return Handshake(
+        msg_type=HandshakeType(construct.msg_type),
+        length=construct.length,
+        body=_get_handshake_message(construct.msg_type, construct.body),
     )
