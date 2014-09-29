@@ -49,6 +49,13 @@ class SignatureAndHashAlgorithm(object):
     """
 
 
+@attributes(['dh_p', 'dh_g', 'dh_Ys'])
+class ServerDHParams(object):
+    """
+    An object representing a ServerDHParams struct.
+    """
+
+
 def parse_certificate_request(bytes):
     """
     Parse a ``CertificateRequest`` struct.
@@ -74,4 +81,19 @@ def parse_certificate_request(bytes):
         certificate_authorities=(
             construct.certificate_authorities.certificate_authorities
         )
+    )
+
+
+def parse_server_dh_params(bytes):
+    """
+    Parse a ``ServerDHParams`` struct.
+
+    :param bytes: the bytes representing the input.
+    :return: ServerDHParams object.
+    """
+    construct = _constructs.ServerDHParams.parse(bytes)
+    return ServerDHParams(
+        dh_p=construct.dh_p,
+        dh_g=construct.dh_g,
+        dh_Ys=construct.dh_Ys
     )

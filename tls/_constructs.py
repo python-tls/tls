@@ -120,3 +120,13 @@ CertificateRequest = Struct(
     SupportedSignatureAlgorithms,
     DistinguishedName,
 )
+
+ServerDHParams = Struct(
+    "ServerDHParams",
+    UBInt16("dh_p_length"),
+    Bytes("dh_p", lambda ctx: ctx.dh_p_length),
+    UBInt16("dh_g_length"),
+    Bytes("dh_g", lambda ctx: ctx.dh_g_length),
+    UBInt16("dh_Ys_length"),
+    Bytes("dh_Ys", lambda ctx: ctx.dh_Ys_length),
+)
