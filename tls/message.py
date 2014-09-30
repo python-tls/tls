@@ -77,6 +77,7 @@ class SignatureAndHashAlgorithm(object):
     An object representing a SignatureAndHashAlgorithm struct.
     """
 
+
 @attributes(['certificate_list'])
 class Certificate(object):
     """
