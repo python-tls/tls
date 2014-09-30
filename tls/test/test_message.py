@@ -151,3 +151,15 @@ class TestHandshakeStructParsing(object):
         assert record.msg_type == HandshakeType.SERVER_HELLO_DONE
         assert record.length == 0
         assert isinstance(record.body, ServerHelloDone)
+
+    def test_not_implemented(self):
+        handshake_packet = (
+            b'\x0C'
+            b'\x00\x00\x00\x00'
+            b''
+        )
+        record = parse_handshake_struct(handshake_packet)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == HandshakeType.SERVER_KEY_EXCHANGE
+        assert record.length == 0
+        assert record.body is None
