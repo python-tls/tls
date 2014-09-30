@@ -1,8 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.message import (
-    ClientCertificateType, HashAlgorithm, SignatureAlgorithm,
-    parse_certificate_request
+    Certificate, ClientCertificateType, HashAlgorithm, SignatureAlgorithm,
+    parse_certificate, parse_certificate_request
 )
 
 
@@ -42,3 +42,19 @@ class TestCertificateRequestParsing(object):
         )
         record = parse_certificate_request(packet)
         assert record.certificate_authorities == b'03'
+
+
+class TestCertificateParsing(object):
+    """
+    Tests for parsing of Certificate messages.
+    """
+
+    def test_parse_certificate(self):
+        packet = (
+            b'\x00\x00\x00\x07'  # certificate_length
+            b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
+            b'ABC'  # certificate_list.asn1_cert
+        )
+        record = parse_certificate(packet)
+        assert isinstance(record, Certificate)
+        assert record.certificate_list == [b'ABC']
