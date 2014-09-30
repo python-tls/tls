@@ -1,12 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from tls.hello_message import ClientHello, ServerHello
+from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 
 from tls.message import (
     Certificate, CertificateRequest, ClientCertificateType, Handshake,
-    HandshakeType, HashAlgorithm, HelloRequest, ServerHelloDone,
-    SignatureAlgorithm, parse_certificate, parse_certificate_request,
-    parse_handshake_struct
+    HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
+    ServerHelloDone, SignatureAlgorithm, parse_certificate,
+    parse_certificate_request, parse_handshake_struct, parse_pre_master_secret
 )
 
 
@@ -46,6 +46,26 @@ class TestCertificateRequestParsing(object):
         )
         record = parse_certificate_request(packet)
         assert record.certificate_authorities == b'03'
+
+
+class TestPreMasterSecretParsing(object):
+    """
+    Tests for parsing of PreMasterSecret struct.
+    """
+
+    def test_parse_pre_master_secret(self):
+        import os
+        r = os.urandom(46)
+        packet = (
+            b'\x03\x00'  # ClientHello.client_version
+            + r
+        )
+        record = parse_pre_master_secret(packet)
+        assert isinstance(record, PreMasterSecret)
+        assert isinstance(record.client_version, ProtocolVersion)
+        assert record.client_version.major == 3
+        assert record.client_version.minor == 0
+        assert record.random == r
 
 
 class TestCertificateParsing(object):
