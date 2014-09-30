@@ -6,7 +6,7 @@ from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 ProtocolVersion = Struct(
     "version",
     UBInt8("major"),
-    UBInt8("minor")
+    UBInt8("minor"),
 )
 
 TLSPlaintext = Struct(
@@ -42,19 +42,19 @@ Random = Struct(
 SessionID = Struct(
     "session_id",
     UBInt8("length"),
-    Bytes("session_id", lambda ctx: ctx.length)
+    Bytes("session_id", lambda ctx: ctx.length),
 )
 
 CipherSuites = Struct(
     "cipher_suites",
     UBInt16("length"),  # TODO: Reject packets of length 0
-    Array(lambda ctx: ctx.length / 2, Bytes("cipher_suites", 2))
+    Array(lambda ctx: ctx.length / 2, Bytes("cipher_suites", 2)),
 )
 
 CompressionMethods = Struct(
     "compression_methods",
     UBInt8("length"),  # TODO: Reject packets of length 0
-    Array(lambda ctx: ctx.length, UBInt8("compression_methods"))
+    Array(lambda ctx: ctx.length, UBInt8("compression_methods")),
 )
 
 Extension = Struct(
@@ -111,7 +111,7 @@ SupportedSignatureAlgorithms = Struct(
 DistinguishedName = Struct(
     "certificate_authorities",
     UBInt16("length"),
-    Bytes("certificate_authorities", lambda ctx: ctx.length)
+    Bytes("certificate_authorities", lambda ctx: ctx.length),
 )
 
 CertificateRequest = Struct(
@@ -125,4 +125,23 @@ PreMasterSecret = Struct(
     "pre_master_secret",
     ProtocolVersion,
     Bytes("random_bytes", 46),
+)
+
+ASN1Cert = Struct(
+    "ASN1Cert",
+    UBInt32("length"),   # TODO: Reject packets with length not in 1..2^24-1
+    Bytes("asn1_cert", lambda ctx: ctx.length),
+)
+
+Certificate = Struct(
+    "Certificate",  # TODO: Reject packets with length > 2 ** 24 - 1
+    UBInt32("certificates_length"),
+    Bytes("certificates_bytes", lambda ctx: ctx.certificates_length),
+)
+
+Handshake = Struct(
+    "Handshake",
+    UBInt8("msg_type"),
+    UBInt32("length"),  # TODO: Reject packets with length > 2 ** 24
+    Bytes("body", lambda ctx: ctx.length),
 )
