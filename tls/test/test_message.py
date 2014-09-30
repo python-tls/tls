@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import struct
 
-from tls.hello_message import ClientHello
+from tls.hello_message import ClientHello, ServerHello
 
 
 from tls.message import (
@@ -81,3 +81,29 @@ class TestHandshakeStructParsing(object):
         assert record.msg_type == HandshakeType.CLIENT_HELLO
         assert record.length == 51
         assert isinstance(record.body, ClientHello)
+
+    def test_parse_server_hello_in_handshake(self):
+        server_hello_packet = (
+            b'\x03\x00'  # server_version
+            b'\x01\x02\x03\x04'  # random.gmt_unix_time
+            b'0123456789012345678901234567'  # random.random_bytes
+            b'\x20'  # session_id.length
+            b'01234567890123456789012345678901'  # session_id
+            b'\x00\x6B'  # cipher_suite
+            b'\x00'  # compression_method
+            b'\x00\x08'  # extensions.length
+            b'\x00\x0D'  # extensions.extensions.extension_type
+            b'\x00\x04'  # extensions.extensions.extensions_data length
+            b'abcd'  # extensions.extensions.extension_data
+        )
+
+        handshake_packet = (
+            b'\x02'  # msg_type
+            b'\x00\x00\x00P'  # body length
+        ) + server_hello_packet
+
+        record = parse_handshake_struct(handshake_packet)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == HandshakeType.SERVER_HELLO
+        assert record.length == 80
+        assert isinstance(record.body, ServerHello)
