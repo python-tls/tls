@@ -112,13 +112,11 @@ def parse_certificate_request(bytes):
 
 
 _handshake_message_parser = {
-#    0: parse_hello_request,
     1: parse_client_hello,
     2: parse_server_hello,
 #    11: parse_certificate,
 #    12: parse_server_key_exchange,
     13: parse_certificate_request,
-#    14: parse_server_hello_done,
 #    15: parse_certificate_verify,
 #    16: parse_client_key_exchange,
 #    20: parse_finished,
