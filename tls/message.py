@@ -145,7 +145,7 @@ def parse_certificate(bytes):
 _handshake_message_parser = {
     1: parse_client_hello,
     2: parse_server_hello,
-    #    11: parse_certificate,
+    11: parse_certificate,
     #    12: parse_server_key_exchange,
     13: parse_certificate_request,
     #    15: parse_certificate_verify,
@@ -160,7 +160,7 @@ def _get_handshake_message(msg_type, body):
             return HelloRequest()
         elif msg_type == 14:
             return ServerHelloDone()
-        elif msg_type in [11, 12, 15, 16, 20]:
+        elif msg_type in [12, 15, 16, 20]:
             raise NotImplementedError
         else:
             return _handshake_message_parser[msg_type](body)

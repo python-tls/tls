@@ -145,6 +145,24 @@ class TestHandshakeStructParsing(object):
         assert record.length == 8
         assert isinstance(record.body, CertificateRequest)
 
+    def test_parse_certificate_in_handshake(self):
+        certificate_packet = (
+            b'\x00\x00\x00\x07'  # certificate_length
+            b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
+            b'ABC'  # certificate_list.asn1_cert
+        )
+
+        handshake_packet = (
+            b'\x0B'
+            b'\x00\x00\x00\x0b'
+        ) + certificate_packet
+
+        record = parse_handshake_struct(handshake_packet)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == HandshakeType.CERTIFICATE
+        assert record.length == 11
+        assert isinstance(record.body, Certificate)
+
     def test_parse_hello_request(self):
         handshake_packet = (
             b'\x00'
