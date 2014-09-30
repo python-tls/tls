@@ -6,7 +6,7 @@ from characteristic import attributes
 
 from tls import _constructs
 
-from tls.hello_message import parse_server_hello, parse_client_hello
+from tls.hello_message import parse_client_hello, parse_server_hello
 
 
 class ClientCertificateType(Enum):
@@ -114,12 +114,12 @@ def parse_certificate_request(bytes):
 _handshake_message_parser = {
     1: parse_client_hello,
     2: parse_server_hello,
-#    11: parse_certificate,
-#    12: parse_server_key_exchange,
+    #    11: parse_certificate,
+    #    12: parse_server_key_exchange,
     13: parse_certificate_request,
-#    15: parse_certificate_verify,
-#    16: parse_client_key_exchange,
-#    20: parse_finished,
+    #    15: parse_certificate_verify,
+    #    16: parse_client_key_exchange,
+    #    20: parse_finished,
 }
 
 
