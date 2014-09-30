@@ -132,3 +132,10 @@ Certificate = Struct(
     UBInt32("certificates_length"),
     Bytes("certificates_bytes", lambda ctx: ctx.certificates_length),
 )
+
+Handshake = Struct(
+    "Handshake",
+    UBInt8("msg_type"),
+    UBInt32("length"),  # TODO: Reject packets with length > 2 ** 24
+    Bytes("body", lambda ctx: ctx.length),
+)
