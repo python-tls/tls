@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 from tls.hello_message import ClientHello, ServerHello
 
 from tls.message import (
-    ClientCertificateType, Handshake, HandshakeType, HashAlgorithm,
-    HelloRequest, ServerHelloDone, SignatureAlgorithm,
+    CertificateRequest, ClientCertificateType, Handshake, HandshakeType,
+    HashAlgorithm, HelloRequest, ServerHelloDone, SignatureAlgorithm,
     parse_certificate_request, parse_handshake_struct
 )
 
@@ -105,6 +105,28 @@ class TestHandshakeStructParsing(object):
         assert record.msg_type == HandshakeType.SERVER_HELLO
         assert record.length == 80
         assert isinstance(record.body, ServerHello)
+
+    def test_parse_certificate_request_in_handshake(self):
+        certificate_request_packet = (
+            b'\x01'  # certificate_types length
+            b'\x01'  # certificate_types
+            b'\x00\x02'  # supported_signature_algorithms length
+            b'\x01'  # supported_signature_algorithms.hash
+            b'\x01'  # supported_signature_algorithms.signature
+            b'\x00\x00'  # certificate_authorities length
+            b''  # certificate_authorities
+        )
+
+        handshake_packet = (
+            b'\x0D'
+            b'\x00\x00\x00\x08'
+        ) + certificate_request_packet
+
+        record = parse_handshake_struct(handshake_packet)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == HandshakeType.CERTIFICATE_REQUEST
+        assert record.length == 8
+        assert isinstance(record.body, CertificateRequest)
 
     def test_parse_hello_request(self):
         handshake_packet = (
