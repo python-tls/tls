@@ -4,6 +4,8 @@ from enum import Enum
 
 from characteristic import attributes
 
+from six import BytesIO
+
 from tls import _constructs
 
 from tls.hello_message import parse_client_hello, parse_server_hello
@@ -75,6 +77,12 @@ class SignatureAndHashAlgorithm(object):
     An object representing a SignatureAndHashAlgorithm struct.
     """
 
+@attributes(['certificate_list'])
+class Certificate(object):
+    """
+    An object representing a Certificate struct.
+    """
+
 
 @attributes(['msg_type', 'length', 'body'])
 class Handshake(object):
@@ -108,6 +116,28 @@ def parse_certificate_request(bytes):
         certificate_authorities=(
             construct.certificate_authorities.certificate_authorities
         )
+    )
+
+
+def parse_certificate(bytes):
+    """
+    Parse a ``Certificate`` struct.
+
+    :param bytes: the bytes representing the input.
+    :return: Certificate object.
+    """
+    construct = _constructs.Certificate.parse(bytes)
+    # XXX: Find a better way to parse an array of variable-length objects
+    certificates = []
+    certificates_io = BytesIO(construct.certificates_bytes)
+
+    while certificates_io.tell() < construct.certificates_length:
+        certificate_construct = _constructs.ASN1Cert.parse_stream(
+            certificates_io
+        )
+        certificates.append(certificate_construct.asn1_cert)
+    return Certificate(
+        certificate_list=certificates
     )
 
 
