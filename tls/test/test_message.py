@@ -51,6 +51,10 @@ class TestCertificateRequestParsing(object):
         record = parse_certificate_request(self.no_authorities_packet)
         assert record.as_bytes() == self.no_authorities_packet
 
+    def test_as_bytes_with_authoritites(self):
+        record = parse_certificate_request(self.with_authorities_packet)
+        assert record.as_bytes() == self.with_authorities_packet
+
 
 class TestPreMasterSecretParsing(object):
     """

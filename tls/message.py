@@ -81,8 +81,9 @@ class CertificateRequest(object):
                                    for cert_type in self.certificate_types]
             ),
             supported_signature_algorithms=Container(
-                supported_signature_algorithms_length=2 * len(self.supported_signature_algorithms),
-
+                supported_signature_algorithms_length=2 * len(
+                    self.supported_signature_algorithms
+                ),
                 algorithms=[Container(
                     hash=algorithm.hash.value,
                     signature=algorithm.signature.value,
@@ -91,7 +92,7 @@ class CertificateRequest(object):
                 ]
             ),
             certificate_authorities=Container(
-                length=len(self.certificate_authorities) * 2,
+                length=len(self.certificate_authorities),
                 certificate_authorities=self.certificate_authorities
             )
         ))
