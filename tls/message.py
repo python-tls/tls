@@ -94,6 +94,11 @@ class ASN1Cert(object):
     """
     An object representing ASN.1 Certificate
     """
+    def as_bytes(self):
+        return _constructs.ASN1Cert.build(Container(
+            length=len(self.asn1_cert),
+            asn1_cert=self.asn1_cert
+        ))
 
 
 @attributes(['certificate_list'])
@@ -102,13 +107,13 @@ class Certificate(object):
     An object representing a Certificate struct.
     """
     def as_bytes(self):
-        return _constructs.Certificate.build(
+        return _constructs.Certificate.build(Container(
             certificates_length=sum([4 + len(asn1cert.asn1_cert)
                                      for asn1cert in self.certificate_list]),
             certificates_bytes=b''.join(
                 [asn1cert.as_bytes() for asn1cert in self.certificate_list]
             )
-        )
+        ))
 
 
 @attributes(['msg_type', 'length', 'body'])

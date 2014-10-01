@@ -72,17 +72,21 @@ class TestCertificateParsing(object):
     """
     Tests for parsing of Certificate messages.
     """
+    packet = (
+        b'\x00\x00\x00\x07'  # certificate_length
+        b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
+        b'ABC'  # certificate_list.asn1_cert
+    )
 
     def test_parse_certificate(self):
-        packet = (
-            b'\x00\x00\x00\x07'  # certificate_length
-            b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
-            b'ABC'  # certificate_list.asn1_cert
-        )
-        record = parse_certificate(packet)
+        record = parse_certificate(self.packet)
         assert isinstance(record, Certificate)
         assert len(record.certificate_list) == 1
         assert record.certificate_list[0].asn1_cert == b'ABC'
+
+    def test_as_bytes(self):
+        record = parse_certificate(self.packet)
+        assert record.as_bytes() == self.packet
 
 
 class TestHandshakeStructParsing(object):
@@ -109,7 +113,6 @@ class TestHandshakeStructParsing(object):
         b'\x01'  # msg_type
         b'\x00\x00\x003'  # body length
     ) + client_hello_packet
-
 
     server_hello_packet = (
         b'\x03\x00'  # server_version
