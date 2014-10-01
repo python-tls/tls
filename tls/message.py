@@ -73,6 +73,28 @@ class CertificateRequest(object):
     """
     An object representing a CertificateRequest struct.
     """
+    def as_bytes(self):
+        return _constructs.CertificateRequest.build(Container(
+            certificate_types=Container(
+                length=len(self.certificate_types),
+                certificate_types=[cert_type.value
+                                   for cert_type in self.certificate_types]
+            ),
+            supported_signature_algorithms=Container(
+                supported_signature_algorithms_length=2 * len(self.supported_signature_algorithms),
+
+                algorithms=[Container(
+                    hash=algorithm.hash.value,
+                    signature=algorithm.signature.value,
+                )
+                    for algorithm in self.supported_signature_algorithms
+                ]
+            ),
+            certificate_authorities=Container(
+                length=len(self.certificate_authorities) * 2,
+                certificate_authorities=self.certificate_authorities
+            )
+        ))
 
 
 @attributes(['hash', 'signature'])
@@ -113,6 +135,7 @@ class Certificate(object):
             certificates_bytes=b''.join(
                 [asn1cert.as_bytes() for asn1cert in self.certificate_list]
             )
+
         ))
 
 
@@ -133,7 +156,6 @@ class Handshake(object):
                 body=_body_as_bytes
             )
         )
-
 
 
 def parse_certificate_request(bytes):

@@ -14,18 +14,27 @@ class TestCertificateRequestParsing(object):
     """
     Tests for parsing of CertificateRequest messages.
     """
+    no_authorities_packet = (
+        b'\x01'  # certificate_types length
+        b'\x01'  # certificate_types
+        b'\x00\x02'  # supported_signature_algorithms length
+        b'\x01'  # supported_signature_algorithms.hash
+        b'\x01'  # supported_signature_algorithms.signature
+        b'\x00\x00'  # certificate_authorities length
+        b''  # certificate_authorities
+    )
+    with_authorities_packet = (
+        b'\x01'  # certificate_types length
+        b'\x01'  # certificate_types
+        b'\x00\x02'  # supported_signature_algorithms length
+        b'\x01'  # supported_signature_algorithms.hash
+        b'\x01'  # supported_signature_algorithms.signature
+        b'\x00\x02'  # certificate_authorities length
+        b'03'  # certificate_authorities
+    )
 
     def test_parse_certificate_request(self):
-        packet = (
-            b'\x01'  # certificate_types length
-            b'\x01'  # certificate_types
-            b'\x00\x02'  # supported_signature_algorithms length
-            b'\x01'  # supported_signature_algorithms.hash
-            b'\x01'  # supported_signature_algorithms.signature
-            b'\x00\x00'  # certificate_authorities length
-            b''  # certificate_authorities
-        )
-        record = parse_certificate_request(packet)
+        record = parse_certificate_request(self.no_authorities_packet)
         assert record.certificate_types == [ClientCertificateType.RSA_SIGN]
         assert len(record.supported_signature_algorithms) == 1
         assert record.supported_signature_algorithms[0].hash == \
@@ -35,17 +44,12 @@ class TestCertificateRequestParsing(object):
         assert record.certificate_authorities == b''
 
     def test_parse_certificate_request_with_authorities(self):
-        packet = (
-            b'\x01'  # certificate_types length
-            b'\x01'  # certificate_types
-            b'\x00\x02'  # supported_signature_algorithms length
-            b'\x01'  # supported_signature_algorithms.hash
-            b'\x01'  # supported_signature_algorithms.signature
-            b'\x00\x02'  # certificate_authorities length
-            b'03'  # certificate_authorities
-        )
-        record = parse_certificate_request(packet)
+        record = parse_certificate_request(self.with_authorities_packet)
         assert record.certificate_authorities == b'03'
+
+    def test_as_bytes_no_authoritites(self):
+        record = parse_certificate_request(self.no_authorities_packet)
+        assert record.as_bytes() == self.no_authorities_packet
 
 
 class TestPreMasterSecretParsing(object):
