@@ -81,63 +81,64 @@ class TestCertificateParsing(object):
         )
         record = parse_certificate(packet)
         assert isinstance(record, Certificate)
-        assert record.certificate_list == [b'ABC']
+        assert len(record.certificate_list) == 1
+        assert record.certificate_list[0].asn1_cert == b'ABC'
 
 
 class TestHandshakeStructParsing(object):
     """
     Tests for parsing of Handshake structs.
     """
+    client_hello_packet = (
+        b'\x03\x00'  # client_version
+        b'\x01\x02\x03\x04'  # random.gmt_unix_time
+        b'0123456789012345678901234567'  # random.random_bytes
+        b'\x00'  # session_id.length
+        b''  # session_id.session_id
+        b'\x00\x02'  # cipher_suites length
+        b'\x00\x6B'  # cipher_suites
+        b'\x01'  # compression_methods length
+        b'\x00'  # compression_methods
+        b'\x00\x08'  # extensions length
+        b'\x00\x0D'  # extensions.extensions.extension_type
+        b'\x00\x04'  # extensions.extensions.extensions_data length
+        b'abcd'  # extensions.extensions.extension_data
+    )
+
+    client_hello_handshake_packet = (
+        b'\x01'  # msg_type
+        b'\x00\x00\x003'  # body length
+    ) + client_hello_packet
+
+
+    server_hello_packet = (
+        b'\x03\x00'  # server_version
+        b'\x01\x02\x03\x04'  # random.gmt_unix_time
+        b'0123456789012345678901234567'  # random.random_bytes
+        b'\x20'  # session_id.length
+        b'01234567890123456789012345678901'  # session_id
+        b'\x00\x6B'  # cipher_suite
+        b'\x00'  # compression_method
+        b'\x00\x08'  # extensions.length
+        b'\x00\x0D'  # extensions.extensions.extension_type
+        b'\x00\x04'  # extensions.extensions.extensions_data length
+        b'abcd'  # extensions.extensions.extension_data
+    )
+
+    server_hello_handshake_packet = (
+        b'\x02'  # msg_type
+        b'\x00\x00\x00P'  # body length
+    ) + server_hello_packet
 
     def test_parse_client_hello_in_handshake(self):
-        client_hello_packet = (
-            b'\x03\x00'  # client_version
-            b'\x01\x02\x03\x04'  # random.gmt_unix_time
-            b'0123456789012345678901234567'  # random.random_bytes
-            b'\x00'  # session_id.length
-            b''  # session_id.session_id
-            b'\x00\x02'  # cipher_suites length
-            b'\x00\x6B'  # cipher_suites
-            b'\x01'  # compression_methods length
-            b'\x00'  # compression_methods
-            b'\x00\x08'  # extensions length
-            b'\x00\x0D'  # extensions.extensions.extension_type
-            b'\x00\x04'  # extensions.extensions.extensions_data length
-            b'abcd'  # extensions.extensions.extension_data
-        )
-
-        handshake_packet = (
-            b'\x01'  # msg_type
-            b'\x00\x00\x003'  # body length
-        ) + client_hello_packet
-
-        record = parse_handshake_struct(handshake_packet)
+        record = parse_handshake_struct(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.CLIENT_HELLO
         assert record.length == 51
         assert isinstance(record.body, ClientHello)
 
     def test_parse_server_hello_in_handshake(self):
-        server_hello_packet = (
-            b'\x03\x00'  # server_version
-            b'\x01\x02\x03\x04'  # random.gmt_unix_time
-            b'0123456789012345678901234567'  # random.random_bytes
-            b'\x20'  # session_id.length
-            b'01234567890123456789012345678901'  # session_id
-            b'\x00\x6B'  # cipher_suite
-            b'\x00'  # compression_method
-            b'\x00\x08'  # extensions.length
-            b'\x00\x0D'  # extensions.extensions.extension_type
-            b'\x00\x04'  # extensions.extensions.extensions_data length
-            b'abcd'  # extensions.extensions.extension_data
-        )
-
-        handshake_packet = (
-            b'\x02'  # msg_type
-            b'\x00\x00\x00P'  # body length
-        ) + server_hello_packet
-
-        record = parse_handshake_struct(handshake_packet)
+        record = parse_handshake_struct(self.server_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.SERVER_HELLO
         assert record.length == 80
@@ -218,3 +219,11 @@ class TestHandshakeStructParsing(object):
         assert record.msg_type == HandshakeType.SERVER_KEY_EXCHANGE
         assert record.length == 0
         assert record.body is None
+
+    def test_as_bytes_server_hello_packet(self):
+        record = parse_handshake_struct(self.server_hello_handshake_packet)
+        assert record.as_bytes() == self.server_hello_handshake_packet
+
+    def test_as_bytes_client_hello_packet(self):
+        record = parse_handshake_struct(self.client_hello_handshake_packet)
+        assert record.as_bytes() == self.client_hello_handshake_packet

@@ -4,6 +4,8 @@ from enum import Enum
 
 from characteristic import attributes
 
+from construct import Container
+
 from six import BytesIO
 
 from tls import _constructs
@@ -87,11 +89,26 @@ class PreMasterSecret(object):
     """
 
 
+@attributes(['asn1_cert'])
+class ASN1Cert(object):
+    """
+    An object representing ASN.1 Certificate
+    """
+
+
 @attributes(['certificate_list'])
 class Certificate(object):
     """
     An object representing a Certificate struct.
     """
+    def as_bytes(self):
+        return _constructs.Certificate.build(
+            certificates_length=sum([4 + len(asn1cert.asn1_cert)
+                                     for asn1cert in self.certificate_list]),
+            certificates_bytes=b''.join(
+                [asn1cert.as_bytes() for asn1cert in self.certificate_list]
+            )
+        )
 
 
 @attributes(['msg_type', 'length', 'body'])
@@ -99,6 +116,19 @@ class Handshake(object):
     """
     An object representing a Handshake struct.
     """
+    def as_bytes(self):
+        if self.msg_type.value in [1, 2]:
+            _body_as_bytes = self.body.as_bytes()
+        else:
+            _body_as_bytes = None
+        return _constructs.Handshake.build(
+            Container(
+                msg_type=self.msg_type.value,
+                length=self.length,
+                body=_body_as_bytes
+            )
+        )
+
 
 
 def parse_certificate_request(bytes):
@@ -162,7 +192,9 @@ def parse_certificate(bytes):
         certificate_construct = _constructs.ASN1Cert.parse_stream(
             certificates_io
         )
-        certificates.append(certificate_construct.asn1_cert)
+        certificates.append(
+            ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
+        )
     return Certificate(
         certificate_list=certificates
     )
