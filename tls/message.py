@@ -146,7 +146,7 @@ class Handshake(object):
     An object representing a Handshake struct.
     """
     def as_bytes(self):
-        if self.msg_type.value in [1, 2, 11]:
+        if self.msg_type.value in [1, 2, 11, 13]:
             _body_as_bytes = self.body.as_bytes()
         else:
             _body_as_bytes = None
