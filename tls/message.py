@@ -59,12 +59,16 @@ class HelloRequest(object):
     """
     An object representing a HelloRequest struct.
     """
+    def as_bytes(self):
+        return b''
 
 
 class ServerHelloDone(object):
     """
     An object representing a ServerHelloDone struct.
     """
+    def as_bytes(self):
+        return b''
 
 
 @attributes(['certificate_types', 'supported_signature_algorithms',
@@ -148,7 +152,8 @@ class Handshake(object):
     def as_bytes(self):
         if self.msg_type in [
             HandshakeType.SERVER_HELLO, HandshakeType.CLIENT_HELLO,
-            HandshakeType.CERTIFICATE, HandshakeType.CERTIFICATE_REQUEST
+            HandshakeType.CERTIFICATE, HandshakeType.CERTIFICATE_REQUEST,
+            HandshakeType.HELLO_REQUEST, HandshakeType.SERVER_HELLO_DONE
         ]:
             _body_as_bytes = self.body.as_bytes()
         else:
@@ -249,7 +254,11 @@ def _get_handshake_message(msg_type, body):
             return HelloRequest()
         elif msg_type == HandshakeType.SERVER_HELLO_DONE:
             return ServerHelloDone()
-        elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE, HandshakeType.CERTIFICATE_VERIFY, HandshakeType.CLIENT_KEY_EXCHANGE, HandshakeType.FINISHED]:
+        elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
+                          HandshakeType.CERTIFICATE_VERIFY,
+                          HandshakeType.CLIENT_KEY_EXCHANGE,
+                          HandshakeType.FINISHED
+                          ]:
             raise NotImplementedError
         else:
             return _handshake_message_parser[msg_type](body)
@@ -268,5 +277,7 @@ def parse_handshake_struct(bytes):
     return Handshake(
         msg_type=HandshakeType(construct.msg_type),
         length=construct.length,
-        body=_get_handshake_message(HandshakeType(construct.msg_type), construct.body),
+        body=_get_handshake_message(
+            HandshakeType(construct.msg_type), construct.body
+        ),
     )
