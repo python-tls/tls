@@ -146,7 +146,10 @@ class Handshake(object):
     An object representing a Handshake struct.
     """
     def as_bytes(self):
-        if self.msg_type.value in [1, 2, 11, 13]:
+        if self.msg_type in [
+            HandshakeType.SERVER_HELLO, HandshakeType.CLIENT_HELLO,
+            HandshakeType.CERTIFICATE, HandshakeType.CERTIFICATE_REQUEST
+        ]:
             _body_as_bytes = self.body.as_bytes()
         else:
             _body_as_bytes = None
@@ -229,11 +232,11 @@ def parse_certificate(bytes):
 
 
 _handshake_message_parser = {
-    1: parse_client_hello,
-    2: parse_server_hello,
-    11: parse_certificate,
+    HandshakeType.CLIENT_HELLO: parse_client_hello,
+    HandshakeType.SERVER_HELLO: parse_server_hello,
+    HandshakeType.CERTIFICATE: parse_certificate,
     #    12: parse_server_key_exchange,
-    13: parse_certificate_request,
+    HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
     #    15: parse_certificate_verify,
     #    16: parse_client_key_exchange,
     #    20: parse_finished,
@@ -242,11 +245,11 @@ _handshake_message_parser = {
 
 def _get_handshake_message(msg_type, body):
     try:
-        if msg_type == 0:
+        if msg_type == HandshakeType.HELLO_REQUEST:
             return HelloRequest()
-        elif msg_type == 14:
+        elif msg_type == HandshakeType.SERVER_HELLO_DONE:
             return ServerHelloDone()
-        elif msg_type in [12, 15, 16, 20]:
+        elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE, HandshakeType.CERTIFICATE_VERIFY, HandshakeType.CLIENT_KEY_EXCHANGE, HandshakeType.FINISHED]:
             raise NotImplementedError
         else:
             return _handshake_message_parser[msg_type](body)
@@ -265,5 +268,5 @@ def parse_handshake_struct(bytes):
     return Handshake(
         msg_type=HandshakeType(construct.msg_type),
         length=construct.length,
-        body=_get_handshake_message(construct.msg_type, construct.body),
+        body=_get_handshake_message(HandshakeType(construct.msg_type), construct.body),
     )
