@@ -152,7 +152,7 @@ class Handshake(object):
         ]:
             _body_as_bytes = self.body.as_bytes()
         else:
-            _body_as_bytes = None
+            _body_as_bytes = b''
         return _constructs.Handshake.build(
             Container(
                 msg_type=self.msg_type.value,

@@ -167,6 +167,12 @@ class TestHandshakeStructParsing(object):
         b'\x00\x00\x00\x08'
     ) + certificate_request_packet
 
+    server_key_exchange_handshake = (
+        b'\x0C'
+        b'\x00\x00\x00\x00'
+        b''
+    )
+
     def test_parse_client_hello_in_handshake(self):
         record = parse_handshake_struct(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
@@ -222,12 +228,7 @@ class TestHandshakeStructParsing(object):
         assert isinstance(record.body, ServerHelloDone)
 
     def test_not_implemented(self):
-        handshake_packet = (
-            b'\x0C'
-            b'\x00\x00\x00\x00'
-            b''
-        )
-        record = parse_handshake_struct(handshake_packet)
+        record = parse_handshake_struct(self.server_key_exchange_handshake)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.SERVER_KEY_EXCHANGE
         assert record.length == 0
@@ -248,3 +249,7 @@ class TestHandshakeStructParsing(object):
     def test_as_bytes_certificate_request_packet(self):
         record = parse_handshake_struct(self.certificate_request_handshake)
         assert record.as_bytes() == self.certificate_request_handshake
+
+    def test_as_bytes_not_implemented(self):
+        record = parse_handshake_struct(self.server_key_exchange_handshake)
+        assert record.as_bytes() == self.server_key_exchange_handshake
