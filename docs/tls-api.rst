@@ -10,31 +10,31 @@ Python TLS API
     :param ClientCertificateStore client_certificate_store:
         The certificate that the client will present to the server.
 
-    .. method:: start(write_callback, close_callback, verify_callback=None)
+    .. method:: start(write_to_wire_callback, wire_close_callback, verify_callback=None)
 
-        :param callable write_callback:
+        :param callable write_to_wire_callback:
             Callable of one argument of ``bytes`` type.
             It will be called when TLS data should be sent over the transport.
-        :param callable close_callback:
+        :param callable wire_close_callback:
             Callable of one argument of ``bool`` type, called ``immediate``.
             It will be called when the TLS protocols mandates a transport shutdown.
-            The read side of the connection must always be shut down immediately and no further data should be delivered to the session.
+            The read side of the connection must always be shut down immediately and no further data should be delivered to the connection.
             If ``immediate`` is True, then the transport should close the write side of the transport and free all associated resources as soon as possible.
-            If ``immediate`` is False, then the transport should make a reasonable attempt to deliver the bytes already sent to ``write_callback`` (which will be a ``close_alert`` message), meaning it can wait for a configured timeout before closing down the write side of the connection.
+            If ``immediate`` is False, then the transport should make a reasonable attempt to deliver the bytes already sent to ``write_to_wire_callback`` (which will be a ``close_alert`` message), meaning it can wait for a configured timeout before closing down the write side of the connection.
         :param callable verify_callback:
-            Callable of two arguments: a list of :class:`Certificate` objects, and a :class:`Session` object.
-            It will be called once per negotiation with a list of Certificates and the session object.
+            Callable of two arguments: a list of :class:`Certificate` objects, and a :class:`Connection` object.
+            It will be called once per negotiation with a list of Certificates and the connection object.
             The certificates are in chain order, starting with the leaf certificate and ending with the root-most certificate.
             Specifying a verify_callback does *not* override the basic verification that PyTLS does, such as certificate chain validation, basic certificate checks, and hostname validation.
             verify_callback has no particular contract; return values will be ignored.
-            If any exception is raised, the session will be invalidated and any future calls to :py:meth:`Session.receive_data` or :py:meth:`Session.write_data` will raise :class:`InvalidatedError`.
-            It's up to the user to decide what to do during verification, such as invoking :py:meth:`Session.alert` or simply closing the connection.
+            If any exception is raised, the connection will be invalidated and any future calls to :py:meth:`Connection.data_from_wire` or :py:meth:`Connection.data_from_application` will raise :class:`InvalidatedError`.
+            It's up to the user to decide what to do during verification, such as invoking :py:meth:`Connection.send_alert` or simply closing the connection.
 
-        :return Session:
-            the client session.
+        :return Connection:
+            the client connection.
 
-        Start a TLS session.
-        The write_callback will be invoked with the initial data for TLS negotiation.
+        Start a TLS connection.
+        The write_to_wire_callback will be invoked with the initial data for TLS negotiation.
 
 
 .. class:: ServerTLS(certificates, dh_params=None)
@@ -44,17 +44,17 @@ Python TLS API
     :param bytes dh_params:
         Optional diffie-hellman parameters in DER format.
 
-    .. method:: start(write_callback, verify_callback=None)
+    .. method:: start(write_to_wire_callback, verify_callback=None)
 
-        :return Session:
-            the server session.
+        :return Connection:
+            the server connection.
 
         See ClientTLS.start.
 
 
-.. class:: Session
+.. class:: Connection
 
-    .. method:: receive_data(input)
+    .. method:: data_from_wire(input)
 
         :param bytes input:
             Data that was received from some low-level transport and should be processed by the TLS implementation.
@@ -66,23 +66,23 @@ Python TLS API
         :raises BadTLSDataError:
             When the input data was somehow invalid, such as when decryption failed or the protocol was not followed.
         :raises InvalidatedError:
-            When the session has been invalidated due to a previous error and will accept no further data.
+            When the connection has been invalidated due to a previous error and will accept no further data.
 
-        Given data read from a transport, invoke any callbacks for e.g. session negotiation or heartbeats, etc, and return decrypted application data, if any.
+        Given data read from a transport, invoke any callbacks for e.g. connection negotiation or heartbeats, etc, and return decrypted application data, if any.
         If the input data is somehow invalid, a TLS Alert message will be passed to the write callback, and a BadTLSDataError will be raised.
-        In certain cases of receipt of invalid data, after (sometimes) sending a TLS Alert, this session will be invalidated such that receive_data and write_data will raise :class:`InvalidatedError`.
-        Note that any incomplete data in the input may be buffered by the implementation until further calls to receive_data complete the messages.
+        In certain cases of receipt of invalid data, after (sometimes) sending a TLS Alert, this connection will be invalidated such that data_from_wire and data_from_application will raise :class:`InvalidatedError`.
+        Note that any incomplete data in the input may be buffered by the implementation until further calls to data_from_wire complete the messages.
 
-    .. method:: write_data(output)
+    .. method:: data_from_application(output)
 
         :param bytes output:
             Application data to encrypt and send over the transport.
         :raises InvalidatedError:
-            When the session has been invalidated due to a previous error.
+            When the connection has been invalidated due to a previous error.
 
         Given plaintext application data, invoke the write callback with the encrypted data.
 
-    .. method:: alert(alert_code, level=None)
+    .. method:: send_alert(alert_code, level=None)
 
         :param alert_code:
             The alert code to send in a TLS Alert message. Must be one of the constants specified in this module (TBD).
@@ -93,14 +93,15 @@ Python TLS API
             When an alert_code is passed that is incompatible with the passed level.
 
         Invoke the write callback with a TLS alert message.
-        Usually this is invoked automatically by a method like receive_data, but it may be useful to call this in your verify_callback.
+        Usually this is invoked automatically by a method like data_from_wire, but it may be useful to call this in your verify_callback.
         If the level is passed, the alert code *must* be compatible according to the TLS spec, otherwise :class:`InvalidAlertLevel` will be raised.
         If the level is not passed and the alert code is ambiguous according to the spec, :class:`InvalidAlertLevel` will also be raised in this case.
-        Certain alert() calls may invalidate the session, in which case further calls to write_data and receive_data will fail with :class:`InvalidatedError`.
+        Certain send_alert() calls may invalidate the connection, in which case further calls to data_from_application and data_from_wire will fail with :class:`InvalidatedError`.
 
-    .. method:: finish()
+    .. method:: application_finished()
 
-        Invoke the write callback with a TLS Finished message.
+        Indicate that the application is finished sending data to ``data_from_application``.
+        If the connection has already started, this will invoke the write callback with a TLS Finished message.
 
 
 
@@ -218,7 +219,7 @@ Exceptions
 .. class:: InvalidatedError
 
     Raised when it's no longer valid to call a method or callback based on previous state.
-    e.g., a certificate_chain_callback from :class:`ServerCertificates.get_certificate_chain_for_server_name` being invoked a second time, or :class:`Session.receive_data` being invoked after a session has been invalidated due to incorrect data.
+    e.g., a certificate_chain_callback from :class:`ServerCertificates.get_certificate_chain_for_server_name` being invoked a second time, or :class:`Connection.data_from_wire` being invoked after a connection has been invalidated due to incorrect data.
 
 .. class:: InvalidAlertLevel
 
@@ -290,7 +291,7 @@ TODO
 
 - pin against port and host (???)
 
-- sessions should probably have a .cipher_suite, .tls_version, .session_id,
+- connections should probably have a .cipher_suite, .tls_version, .session_id,
   .tls_extensions, and lots more
 
 - allow disabling certain options (tls versions or algorithm choices) that we
