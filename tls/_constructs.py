@@ -155,3 +155,9 @@ Handshake = Struct(
     UBInt32("length"),  # TODO: Reject packets with length > 2 ** 24
     Bytes("body", lambda ctx: ctx.length),
 )
+
+Alert = Struct(
+    "Alert",
+    UBInt8("level"),
+    UBInt8("description"),
+)
