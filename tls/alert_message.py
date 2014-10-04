@@ -8,7 +8,7 @@ from tls import _constructs
 
 
 class AlertLevel(Enum):
-    WARNING = 0
+    WARNING = 1
     FATAL = 2
 
 
