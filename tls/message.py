@@ -4,6 +4,8 @@ from enum import Enum
 
 from characteristic import attributes
 
+from construct import Container
+
 from six import BytesIO
 
 from tls import _constructs
@@ -57,12 +59,16 @@ class HelloRequest(object):
     """
     An object representing a HelloRequest struct.
     """
+    def as_bytes(self):
+        return b''
 
 
 class ServerHelloDone(object):
     """
     An object representing a ServerHelloDone struct.
     """
+    def as_bytes(self):
+        return b''
 
 
 @attributes(['certificate_types', 'supported_signature_algorithms',
@@ -71,6 +77,29 @@ class CertificateRequest(object):
     """
     An object representing a CertificateRequest struct.
     """
+    def as_bytes(self):
+        return _constructs.CertificateRequest.build(Container(
+            certificate_types=Container(
+                length=len(self.certificate_types),
+                certificate_types=[cert_type.value
+                                   for cert_type in self.certificate_types]
+            ),
+            supported_signature_algorithms=Container(
+                supported_signature_algorithms_length=2 * len(
+                    self.supported_signature_algorithms
+                ),
+                algorithms=[Container(
+                    hash=algorithm.hash.value,
+                    signature=algorithm.signature.value,
+                )
+                    for algorithm in self.supported_signature_algorithms
+                ]
+            ),
+            certificate_authorities=Container(
+                length=len(self.certificate_authorities),
+                certificate_authorities=self.certificate_authorities
+            )
+        ))
 
 
 @attributes(['hash', 'signature'])
@@ -94,11 +123,32 @@ class PreMasterSecret(object):
     """
 
 
+@attributes(['asn1_cert'])
+class ASN1Cert(object):
+    """
+    An object representing ASN.1 Certificate
+    """
+    def as_bytes(self):
+        return _constructs.ASN1Cert.build(Container(
+            length=len(self.asn1_cert),
+            asn1_cert=self.asn1_cert
+        ))
+
+
 @attributes(['certificate_list'])
 class Certificate(object):
     """
     An object representing a Certificate struct.
     """
+    def as_bytes(self):
+        return _constructs.Certificate.build(Container(
+            certificates_length=sum([4 + len(asn1cert.asn1_cert)
+                                     for asn1cert in self.certificate_list]),
+            certificates_bytes=b''.join(
+                [asn1cert.as_bytes() for asn1cert in self.certificate_list]
+            )
+
+        ))
 
 
 @attributes(['msg_type', 'length', 'body'])
@@ -106,6 +156,22 @@ class Handshake(object):
     """
     An object representing a Handshake struct.
     """
+    def as_bytes(self):
+        if self.msg_type in [
+            HandshakeType.SERVER_HELLO, HandshakeType.CLIENT_HELLO,
+            HandshakeType.CERTIFICATE, HandshakeType.CERTIFICATE_REQUEST,
+            HandshakeType.HELLO_REQUEST, HandshakeType.SERVER_HELLO_DONE
+        ]:
+            _body_as_bytes = self.body.as_bytes()
+        else:
+            _body_as_bytes = b''
+        return _constructs.Handshake.build(
+            Container(
+                msg_type=self.msg_type.value,
+                length=self.length,
+                body=_body_as_bytes
+            )
+        )
 
 
 def parse_certificate_request(bytes):
@@ -184,18 +250,20 @@ def parse_certificate(bytes):
         certificate_construct = _constructs.ASN1Cert.parse_stream(
             certificates_io
         )
-        certificates.append(certificate_construct.asn1_cert)
+        certificates.append(
+            ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
+        )
     return Certificate(
         certificate_list=certificates
     )
 
 
 _handshake_message_parser = {
-    1: parse_client_hello,
-    2: parse_server_hello,
-    11: parse_certificate,
+    HandshakeType.CLIENT_HELLO: parse_client_hello,
+    HandshakeType.SERVER_HELLO: parse_server_hello,
+    HandshakeType.CERTIFICATE: parse_certificate,
     #    12: parse_server_key_exchange,
-    13: parse_certificate_request,
+    HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
     #    15: parse_certificate_verify,
     #    16: parse_client_key_exchange,
     #    20: parse_finished,
@@ -204,11 +272,15 @@ _handshake_message_parser = {
 
 def _get_handshake_message(msg_type, body):
     try:
-        if msg_type == 0:
+        if msg_type == HandshakeType.HELLO_REQUEST:
             return HelloRequest()
-        elif msg_type == 14:
+        elif msg_type == HandshakeType.SERVER_HELLO_DONE:
             return ServerHelloDone()
-        elif msg_type in [12, 15, 16, 20]:
+        elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
+                          HandshakeType.CERTIFICATE_VERIFY,
+                          HandshakeType.CLIENT_KEY_EXCHANGE,
+                          HandshakeType.FINISHED
+                          ]:
             raise NotImplementedError
         else:
             return _handshake_message_parser[msg_type](body)
@@ -227,5 +299,7 @@ def parse_handshake_struct(bytes):
     return Handshake(
         msg_type=HandshakeType(construct.msg_type),
         length=construct.length,
-        body=_get_handshake_message(construct.msg_type, construct.body),
+        body=_get_handshake_message(
+            HandshakeType(construct.msg_type), construct.body
+        ),
     )
