@@ -4,6 +4,8 @@ from enum import Enum
 
 from characteristic import attributes
 
+from construct import Container
+
 from tls import _constructs
 
 
@@ -19,6 +21,16 @@ class TLSPlaintext(object):
     """
     An object representing a TLSPlaintext struct.
     """
+    def as_bytes(self):
+        return _constructs.TLSPlaintext.build(
+            Container(
+                type=self.type.value,
+                version=Container(major=self.version.major,
+                                  minor=self.version.minor),
+                length=len(self.fragment),
+                fragment=self.fragment
+            )
+        )
 
 
 @attributes(['type', 'version', 'fragment'])

@@ -78,6 +78,20 @@ class TestTLSPlaintextParsing(object):
             parse_tls_plaintext(packet)
         assert str(exc_info.value) == "expected 10, found 2"
 
+    def test_as_bytes(self):
+        """
+        Construct a TLSPlaintext object as bytes.
+        """
+        packet = (
+            b'\x16'  # type
+            b'\x03'  # major version
+            b'\x03'  # minor version
+            b'\x00\x0A'  # big-endian length
+            b'0123456789'  # fragment
+        )
+        record = parse_tls_plaintext(packet)
+        assert record.as_bytes() == packet
+
 
 class TestTLSCompressedParsing(object):
     """
