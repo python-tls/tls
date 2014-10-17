@@ -52,7 +52,7 @@ Some of the basic tenets predicating the design:
   allow downgrading to weaker security.
 - It will only deal with in-memory buffers.
 - It will have no global state.
-- It will not allow disabling of security features such as basic security.
+- It will not allow disabling of security features such as basic security
   checks, chain validation and hostname validation.
 - It will support both client and server operation.
 - It may expose less safe and more flexible lower-level APIs, but they will be
@@ -73,13 +73,13 @@ the first question. A declarative parser makes parsing much simpler by
 specifying what a valid message looks like (rather than the steps you need to
 take to parse it). By saying what the protocol looks like, instead of how to
 parse it, you can more easily recognize and discard invalid inputs. This
-project uses ``construct`` library for parsing TLS messages.
+project uses the ``construct`` library for parsing TLS messages.
 
 At the time of writing this, this project can parse most TLS messages (that
 don't need any encryption, at least), and construct bytes out of these
 structured messages.
 
-When we talk about processing we’re talking about answering the second
+When we talk about processing, we’re talking about answering the second
 question. This project will use explicit state machines for the processing of
 TLS messages (and thus, handshake). An explicit state machine makes processing
 much simpler by specifying all the valid states and transitions and inputs that
@@ -94,7 +94,7 @@ large major part left before I am able to make a release.
 Example Use
 ===========
 A basic design for an example usage of this library using Twisted can be `found
-here`_. Note that this **not** a self-contained working sample code, it's
+here`_. Note that this **not** a self-contained working sample code, its
 purpose is to just give you an idea of what it would potentially look like to
 use, once the implementation is more complete)
 
