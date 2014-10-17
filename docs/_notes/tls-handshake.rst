@@ -28,7 +28,7 @@
 
          - Certificate*
 
-         - ClientKeyExchange*
+         - ClientKeyExchange
 
          - CertificateVerify*
 
