@@ -25,7 +25,7 @@ details.
 More on how the TLS handshake works can be found `here`_.
 
 Why yet another TLS library?
-========================
+============================
 
 Many major exploits in other TLS libraries in the past have been
 straightforward software bugs in the protocol implementation, not subtle bugs
