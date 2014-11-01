@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 
 from tls.message import (
-    Certificate, CertificateRequest, ClientCertificateType, Handshake,
-    HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
+    Certificate, CertificateRequest, ClientCertificateType, Finished,
+    Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
     ServerHelloDone, SignatureAlgorithm, parse_certificate,
     parse_certificate_request, parse_handshake_struct, parse_pre_master_secret,
     parse_server_dh_params
@@ -206,6 +206,12 @@ class TestHandshakeStructParsing(object):
         b''
     )
 
+    finished_handshake = (
+        b'\x14'
+        b'\x00\x00\x00\x14'
+        b'some-encrypted-bytes'
+    )
+
     def test_parse_client_hello_in_handshake(self):
         record = parse_handshake_struct(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
@@ -257,6 +263,14 @@ class TestHandshakeStructParsing(object):
         assert record.length == 0
         assert record.body is None
 
+    def test_finished(self):
+        record = parse_handshake_struct(self.finished_handshake)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == HandshakeType.FINISHED
+        assert record.length == 20
+        assert isinstance(record.body, Finished)
+        assert record.body.verify_data == b'some-encrypted-bytes'
+
     def test_as_bytes_server_hello_packet(self):
         record = parse_handshake_struct(self.server_hello_handshake_packet)
         assert record.as_bytes() == self.server_hello_handshake_packet
@@ -284,3 +298,7 @@ class TestHandshakeStructParsing(object):
     def test_as_bytes_server_hello_done(self):
         record = parse_handshake_struct(self.server_hello_done_handshake)
         assert record.as_bytes() == self.server_hello_done_handshake
+
+    def test_as_bytes_finished(self):
+        record = parse_handshake_struct(self.finished_handshake)
+        assert record.as_bytes() == self.finished_handshake
