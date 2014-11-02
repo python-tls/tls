@@ -151,6 +151,12 @@ class Certificate(object):
         ))
 
 
+@attributes(['verify_data'])
+class Finished(object):
+    def as_bytes(self):
+        return self.verify_data
+
+
 @attributes(['msg_type', 'length', 'body'])
 class Handshake(object):
     """
@@ -160,7 +166,8 @@ class Handshake(object):
         if self.msg_type in [
             HandshakeType.SERVER_HELLO, HandshakeType.CLIENT_HELLO,
             HandshakeType.CERTIFICATE, HandshakeType.CERTIFICATE_REQUEST,
-            HandshakeType.HELLO_REQUEST, HandshakeType.SERVER_HELLO_DONE
+            HandshakeType.HELLO_REQUEST, HandshakeType.SERVER_HELLO_DONE,
+            HandshakeType.FINISHED
         ]:
             _body_as_bytes = self.body.as_bytes()
         else:
@@ -266,7 +273,6 @@ _handshake_message_parser = {
     HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
     #    15: parse_certificate_verify,
     #    16: parse_client_key_exchange,
-    #    20: parse_finished,
 }
 
 
@@ -276,10 +282,11 @@ def _get_handshake_message(msg_type, body):
             return HelloRequest()
         elif msg_type == HandshakeType.SERVER_HELLO_DONE:
             return ServerHelloDone()
+        elif msg_type == HandshakeType.FINISHED:
+            return Finished(verify_data=body)
         elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
                           HandshakeType.CERTIFICATE_VERIFY,
                           HandshakeType.CLIENT_KEY_EXCHANGE,
-                          HandshakeType.FINISHED
                           ]:
             raise NotImplementedError
         else:
