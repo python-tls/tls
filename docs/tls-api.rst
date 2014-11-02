@@ -1,10 +1,12 @@
 Python TLS API
 ==============
 
-.. class:: ClientTLS(server_hostname, trust_root=DEFAULT, client_certificate_store=None)
+.. class:: ClientTLS(server_hostname, cipher_suites, trust_root=DEFAULT, client_certificate_store=None)
 
     :param bytes server_hostname:
         The hostname of the server that will be connected to.
+    :param list cipher_suites:
+        The list of supported cipher suites.
     :param TrustStore trust_root:
         The trust root.
     :param ClientCertificateStore client_certificate_store:
