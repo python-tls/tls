@@ -47,6 +47,14 @@ for committers:
   merged until this is rectified.
 * All merged patches must have 100% test coverage.
 
+Licensing
+---------
+
+You must have legal permission to distribute any code you contribute to
+``tls``, and it must be available under both the BSD and Apache
+Software License Version 2.0 licenses.
+
+
 .. _`PEP 8`: http://legacy.python.org/dev/peps/pep-0008/
 .. _`flake8`: https://flake8.readthedocs.org/en/2.1.0/
 .. _`good commit messages`: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
