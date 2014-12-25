@@ -58,7 +58,7 @@ class TestClientHello(object):
         assert record.random.gmt_unix_time == 16909060
         assert record.random.random_bytes == b'0123456789012345678901234567'
         assert record.session_id == b'01234567890123456789012345678901'
-        assert record.cipher_suites == [b'\x00\x6B']
+        assert record.cipher_suites == [107]
         assert record.compression_methods == [0]
         assert len(record.extensions) == 0
 
