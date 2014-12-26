@@ -60,6 +60,23 @@ class TLSCompressed(object):
     """
     An object representing a TLSCompressed struct.
     """
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``TLSCompressed`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: TLSCompressed object.
+        """
+        construct = _constructs.TLSCompressed.parse(bytes)
+        return cls(
+            type=ContentType(construct.type),
+            version=ProtocolVersion(
+                major=construct.version.major,
+                minor=construct.version.minor
+            ),
+            fragment=construct.fragment
+        )
 
 
 @attributes(['type', 'version', 'fragment'])
@@ -74,24 +91,6 @@ class ContentType(Enum):
     ALERT = 21
     HANDSHAKE = 22
     APPLICATION_DATA = 23
-
-
-def parse_tls_compressed(bytes):
-    """
-    Parse a ``TLSCompressed`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: TLSCompressed object.
-    """
-    construct = _constructs.TLSCompressed.parse(bytes)
-    return TLSCompressed(
-        type=ContentType(construct.type),
-        version=ProtocolVersion(
-            major=construct.version.major,
-            minor=construct.version.minor
-        ),
-        fragment=construct.fragment
-    )
 
 
 def parse_tls_ciphertext(bytes):
