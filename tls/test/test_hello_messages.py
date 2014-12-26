@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from tls.hello_message import (
     ClientHello, CompressionMethod, ExtensionType, ServerHello,
-    parse_client_hello, parse_server_hello
+    parse_client_hello
 )
 
 
@@ -119,7 +119,7 @@ class TestServerHello(object):
         :func:`parse_server_hello` returns an instance of
         :class:`ServerHello`.
         """
-        record = parse_server_hello(self.no_extensions_packet)
+        record = ServerHello.from_bytes(self.no_extensions_packet)
         assert isinstance(record, ServerHello)
         assert record.server_version.major == 3
         assert record.server_version.minor == 0
@@ -135,7 +135,7 @@ class TestServerHello(object):
         :func:`parse_server_hello` returns an instance of
         :class:`ServerHello`.
         """
-        record = parse_server_hello(self.extensions_packet)
+        record = ServerHello.from_bytes(self.extensions_packet)
         assert len(record.extensions) == 1
         assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
         assert record.extensions[0].data == b'abcd'
@@ -144,12 +144,12 @@ class TestServerHello(object):
         """
         :func:`ServerHello.as_bytes` returns the bytes it was created with
         """
-        record = parse_server_hello(self.no_extensions_packet)
+        record = ServerHello.from_bytes(self.no_extensions_packet)
         assert record.as_bytes() == self.no_extensions_packet
 
     def test_as_bytes_with_extensions(self):
         """
         :func:`ServerHello.as_bytes` returns the bytes it was created with
         """
-        record = parse_server_hello(self.extensions_packet)
+        record = ServerHello.from_bytes(self.extensions_packet)
         assert record.as_bytes() == self.extensions_packet
