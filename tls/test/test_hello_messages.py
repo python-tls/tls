@@ -5,8 +5,7 @@
 from __future__ import absolute_import, division, print_function
 
 from tls.hello_message import (
-    ClientHello, CompressionMethod, ExtensionType, ServerHello,
-    parse_client_hello
+    ClientHello, CompressionMethod, ExtensionType, ServerHello
 )
 
 
@@ -51,7 +50,7 @@ class TestClientHello(object):
         :func:`parse_client_hello` returns an instance of
         :class:`ClientHello`.
         """
-        record = parse_client_hello(self.no_extensions_packet)
+        record = ClientHello.from_bytes(self.no_extensions_packet)
         assert isinstance(record, ClientHello)
         assert record.client_version.major == 3
         assert record.client_version.minor == 0
@@ -66,18 +65,18 @@ class TestClientHello(object):
         """
         :func:`ClientHello.as_bytes` returns the bytes it was created with
         """
-        record = parse_client_hello(self.no_extensions_packet)
+        record = ClientHello.from_bytes(self.no_extensions_packet)
         assert record.as_bytes() == self.no_extensions_packet
 
     def test_as_bytes_with_extensions(self):
         """
         :func:`ClientHello.as_bytes` returns the bytes it was created with
         """
-        record = parse_client_hello(self.extensions_packet)
+        record = ClientHello.from_bytes(self.extensions_packet)
         assert record.as_bytes() == self.extensions_packet
 
     def test_parse_client_hello_extensions(self):
-        record = parse_client_hello(self.extensions_packet)
+        record = ClientHello.from_bytes(self.extensions_packet)
         assert len(record.extensions) == 1
         assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
         assert record.extensions[0].data == b'abcd'
