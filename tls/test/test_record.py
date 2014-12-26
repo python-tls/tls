@@ -9,7 +9,7 @@ from construct.core import FieldError
 import pytest
 
 from tls.record import (
-    ContentType, TLSCompressed, TLSPlaintext, parse_tls_ciphertext
+    ContentType, TLSCiphertext, TLSCompressed, TLSPlaintext
 )
 
 
@@ -181,7 +181,7 @@ class TestTLSCiphertextParser(object):
             b'\x00\x0A'  # big-endian length
             b'0123456789'  # fragment
         )
-        record = parse_tls_ciphertext(packet)
+        record = TLSCiphertext.from_bytes(packet)
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3

@@ -84,6 +84,23 @@ class TLSCiphertext(object):
     """
     An object representing a TLSCiphertext struct.
     """
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``TLSCiphertext`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: TLSCiphertext object.
+        """
+        construct = _constructs.TLSCiphertext.parse(bytes)
+        return cls(
+            type=ContentType(construct.type),
+            version=ProtocolVersion(
+                major=construct.version.major,
+                minor=construct.version.minor
+            ),
+            fragment=construct.fragment
+        )
 
 
 class ContentType(Enum):
@@ -91,21 +108,3 @@ class ContentType(Enum):
     ALERT = 21
     HANDSHAKE = 22
     APPLICATION_DATA = 23
-
-
-def parse_tls_ciphertext(bytes):
-    """
-    Parse a ``TLSCiphertext`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: TLSCiphertext object.
-    """
-    construct = _constructs.TLSCiphertext.parse(bytes)
-    return TLSCiphertext(
-        type=ContentType(construct.type),
-        version=ProtocolVersion(
-            major=construct.version.major,
-            minor=construct.version.minor
-        ),
-        fragment=construct.fragment
-    )
