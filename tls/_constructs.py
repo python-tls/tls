@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 
+from tls.utils import UBInt24
+
 
 ProtocolVersion = Struct(
     "version",
@@ -156,7 +158,7 @@ Certificate = Struct(
 Handshake = Struct(
     "Handshake",
     UBInt8("msg_type"),
-    UBInt32("length"),  # TODO: Reject packets with length > 2 ** 24
+    UBInt24("length"),  # TODO: Reject packets with length > 2 ** 24
     Bytes("body", lambda ctx: ctx.length),
 )
 

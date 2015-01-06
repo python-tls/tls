@@ -144,7 +144,7 @@ class TestHandshakeStructParsing(object):
 
     client_hello_handshake_packet = (
         b'\x01'  # msg_type
-        b'\x00\x00\x003'  # body length
+        b'\x00\x003'  # body length
     ) + client_hello_packet
 
     server_hello_packet = (
@@ -163,7 +163,7 @@ class TestHandshakeStructParsing(object):
 
     server_hello_handshake_packet = (
         b'\x02'  # msg_type
-        b'\x00\x00\x00P'  # body length
+        b'\x00\x00P'  # body length
     ) + server_hello_packet
 
     certificate_packet = (
@@ -174,7 +174,7 @@ class TestHandshakeStructParsing(object):
 
     certificate_handshake_packet = (
         b'\x0B'
-        b'\x00\x00\x00\x0b'
+        b'\x00\x00\x0b'
     ) + certificate_packet
 
     certificate_request_packet = (
@@ -189,30 +189,30 @@ class TestHandshakeStructParsing(object):
 
     certificate_request_handshake = (
         b'\x0D'
-        b'\x00\x00\x00\x08'
+        b'\x00\x00\x08'
     ) + certificate_request_packet
 
     server_key_exchange_handshake = (
         b'\x0C'
-        b'\x00\x00\x00\x00'
+        b'\x00\x00\x00'
         b''
     )
 
     hello_request_handshake = (
         b'\x00'
-        b'\x00\x00\x00\x00'
+        b'\x00\x00\x00'
         b''
     )
 
     server_hello_done_handshake = (
         b'\x0E'
-        b'\x00\x00\x00\x00'
+        b'\x00\x00\x00'
         b''
     )
 
     finished_handshake = (
         b'\x14'
-        b'\x00\x00\x00\x14'
+        b'\x00\x00\x14'
         b'some-encrypted-bytes'
     )
 
