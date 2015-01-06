@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-from tls.alert_message import AlertDescription, AlertLevel, parse_alert
+from tls.alert_message import Alert, AlertDescription, AlertLevel
 
 
 class TestAlert(object):
@@ -14,6 +14,6 @@ class TestAlert(object):
             b'\x02'
             b'\x16'
         )
-        record = parse_alert(packet)
+        record = Alert.from_bytes(packet)
         assert record.level == AlertLevel.FATAL
         assert record.description == AlertDescription.RECORD_OVERFLOW

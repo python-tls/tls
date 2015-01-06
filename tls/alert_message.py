@@ -49,17 +49,16 @@ class Alert(object):
     """
     An object representing an Alert message.
     """
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse an ``Alert`` struct.
 
-
-def parse_alert(bytes):
-    """
-    Parse an ``Alert`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: Alert object.
-    """
-    construct = _constructs.Alert.parse(bytes)
-    return Alert(
-        level=AlertLevel(construct.level),
-        description=AlertDescription(construct.description)
-    )
+        :param bytes: the bytes representing the input.
+        :return: Alert object.
+        """
+        construct = _constructs.Alert.parse(bytes)
+        return cls(
+            level=AlertLevel(construct.level),
+            description=AlertDescription(construct.description)
+        )

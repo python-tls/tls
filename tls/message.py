@@ -15,7 +15,7 @@ from six import BytesIO
 from tls import _constructs
 
 from tls.hello_message import (
-    ProtocolVersion, parse_client_hello, parse_server_hello
+    ClientHello, ProtocolVersion, ServerHello
 )
 
 
@@ -270,8 +270,8 @@ def parse_certificate(bytes):
 
 
 _handshake_message_parser = {
-    HandshakeType.CLIENT_HELLO: parse_client_hello,
-    HandshakeType.SERVER_HELLO: parse_server_hello,
+    HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
+    HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
     HandshakeType.CERTIFICATE: parse_certificate,
     #    12: parse_server_key_exchange,
     HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,

@@ -9,8 +9,7 @@ from construct.core import FieldError
 import pytest
 
 from tls.record import (
-    ContentType, parse_tls_ciphertext, parse_tls_compressed,
-    parse_tls_plaintext
+    ContentType, TLSCiphertext, TLSCompressed, TLSPlaintext
 )
 
 
@@ -32,7 +31,7 @@ class TestTLSPlaintextParsing(object):
             b'\x00\x0A'  # big-endian length
             b'0123456789'  # fragment
         )
-        record = parse_tls_plaintext(packet)
+        record = TLSPlaintext.from_bytes(packet)
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
@@ -50,7 +49,7 @@ class TestTLSPlaintextParsing(object):
             b'0123456789'
         )
         with pytest.raises(ValueError) as exc_info:
-            parse_tls_plaintext(packet)
+            TLSPlaintext.from_bytes(packet)
         assert str(exc_info.value) == "26 is not a valid ContentType"
 
     def test_incomplete_packet(self):
@@ -64,7 +63,7 @@ class TestTLSPlaintextParsing(object):
             b'0123456789'  # fragment
         )
         with pytest.raises(FieldError) as exc_info:
-            parse_tls_plaintext(packet)
+            TLSPlaintext.from_bytes(packet)
         assert str(exc_info.value) == "expected 2608, found 9"
 
     def test_not_enough_data_to_fragment(self):
@@ -79,7 +78,7 @@ class TestTLSPlaintextParsing(object):
             b'12'  # fragment
         )
         with pytest.raises(FieldError) as exc_info:
-            parse_tls_plaintext(packet)
+            TLSPlaintext.from_bytes(packet)
         assert str(exc_info.value) == "expected 10, found 2"
 
     def test_as_bytes(self):
@@ -93,7 +92,7 @@ class TestTLSPlaintextParsing(object):
             b'\x00\x0A'  # big-endian length
             b'0123456789'  # fragment
         )
-        record = parse_tls_plaintext(packet)
+        record = TLSPlaintext.from_bytes(packet)
         assert record.as_bytes() == packet
 
 
@@ -114,7 +113,7 @@ class TestTLSCompressedParsing(object):
             b'\x00\x0A'  # big-endian length
             b'0123456789'  # fragment
         )
-        record = parse_tls_compressed(packet)
+        record = TLSCompressed.from_bytes(packet)
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
@@ -132,7 +131,7 @@ class TestTLSCompressedParsing(object):
             b'0123456789'
         )
         with pytest.raises(ValueError) as exc_info:
-            parse_tls_compressed(packet)
+            TLSCompressed.from_bytes(packet)
         assert str(exc_info.value) == "26 is not a valid ContentType"
 
     def test_incomplete_packet(self):
@@ -146,7 +145,7 @@ class TestTLSCompressedParsing(object):
             b'0123456789'  # fragment
         )
         with pytest.raises(FieldError) as exc_info:
-            parse_tls_compressed(packet)
+            TLSCompressed.from_bytes(packet)
         assert str(exc_info.value) == "expected 2608, found 9"
 
     def test_not_enough_data_to_fragment(self):
@@ -161,7 +160,7 @@ class TestTLSCompressedParsing(object):
             b'12'  # fragment
         )
         with pytest.raises(FieldError) as exc_info:
-            parse_tls_compressed(packet)
+            TLSCompressed.from_bytes(packet)
         assert str(exc_info.value) == "expected 10, found 2"
 
 
@@ -182,7 +181,7 @@ class TestTLSCiphertextParser(object):
             b'\x00\x0A'  # big-endian length
             b'0123456789'  # fragment
         )
-        record = parse_tls_ciphertext(packet)
+        record = TLSCiphertext.from_bytes(packet)
         assert record.type == ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
