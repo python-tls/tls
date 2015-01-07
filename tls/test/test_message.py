@@ -9,7 +9,7 @@ from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 from tls.message import (
     Certificate, CertificateRequest, ClientCertificateType, Finished,
     Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
-    ServerDHParams, ServerHelloDone, SignatureAlgorithm, parse_certificate,
+    ServerDHParams, ServerHelloDone, SignatureAlgorithm,
     parse_certificate_request
 )
 
@@ -111,13 +111,13 @@ class TestCertificateParsing(object):
     )
 
     def test_parse_certificate(self):
-        record = parse_certificate(self.packet)
+        record = Certificate.from_bytes(self.packet)
         assert isinstance(record, Certificate)
         assert len(record.certificate_list) == 1
         assert record.certificate_list[0].asn1_cert == b'ABC'
 
     def test_as_bytes(self):
-        record = parse_certificate(self.packet)
+        record = Certificate.from_bytes(self.packet)
         assert record.as_bytes() == self.packet
 
 

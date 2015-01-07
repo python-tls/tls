@@ -184,6 +184,30 @@ class Certificate(object):
 
         ))
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``Certificate`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: Certificate object.
+        """
+        construct = _constructs.Certificate.parse(bytes)
+        # XXX: Find a better way to parse an array of variable-length objects
+        certificates = []
+        certificates_io = BytesIO(construct.certificates_bytes)
+
+        while certificates_io.tell() < construct.certificates_length:
+            certificate_construct = _constructs.ASN1Cert.parse_stream(
+                certificates_io
+            )
+            certificates.append(
+                ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
+            )
+        return cls(
+            certificate_list=certificates
+        )
+
 
 @attributes(['verify_data'])
 class Finished(object):
@@ -236,7 +260,7 @@ class Handshake(object):
         _handshake_message_parser = {
             HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
             HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
-            HandshakeType.CERTIFICATE: parse_certificate,
+            HandshakeType.CERTIFICATE: Certificate.from_bytes,
             #    12: parse_server_key_exchange,
             HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
             #    15: parse_certificate_verify,
@@ -286,28 +310,4 @@ def parse_certificate_request(bytes):
         certificate_authorities=(
             construct.certificate_authorities.certificate_authorities
         )
-    )
-
-
-def parse_certificate(bytes):
-    """
-    Parse a ``Certificate`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: Certificate object.
-    """
-    construct = _constructs.Certificate.parse(bytes)
-    # XXX: Find a better way to parse an array of variable-length objects
-    certificates = []
-    certificates_io = BytesIO(construct.certificates_bytes)
-
-    while certificates_io.tell() < construct.certificates_length:
-        certificate_construct = _constructs.ASN1Cert.parse_stream(
-            certificates_io
-        )
-        certificates.append(
-            ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
-        )
-    return Certificate(
-        certificate_list=certificates
     )
