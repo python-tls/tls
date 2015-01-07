@@ -105,6 +105,34 @@ class CertificateRequest(object):
             )
         ))
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``CertificateRequest`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: CertificateRequest object.
+        """
+        construct = _constructs.CertificateRequest.parse(bytes)
+        return cls(
+            certificate_types=[
+                ClientCertificateType(cert_type)
+                for cert_type in construct.certificate_types.certificate_types
+            ],
+            supported_signature_algorithms=[
+                SignatureAndHashAlgorithm(
+                    hash=HashAlgorithm(algorithm.hash),
+                    signature=SignatureAlgorithm(algorithm.signature),
+                )
+                for algorithm in (
+                    construct.supported_signature_algorithms.algorithms
+                )
+            ],
+            certificate_authorities=(
+                construct.certificate_authorities.certificate_authorities
+            )
+        )
+
 
 @attributes(['hash', 'signature'])
 class SignatureAndHashAlgorithm(object):
@@ -262,7 +290,7 @@ class Handshake(object):
             HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
             HandshakeType.CERTIFICATE: Certificate.from_bytes,
             #    12: parse_server_key_exchange,
-            HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
+            HandshakeType.CERTIFICATE_REQUEST: CertificateRequest.from_bytes,
             #    15: parse_certificate_verify,
             #    16: parse_client_key_exchange,
         }
@@ -285,29 +313,4 @@ class Handshake(object):
             return None     # TODO
 
 
-def parse_certificate_request(bytes):
-    """
-    Parse a ``CertificateRequest`` struct.
 
-    :param bytes: the bytes representing the input.
-    :return: CertificateRequest object.
-    """
-    construct = _constructs.CertificateRequest.parse(bytes)
-    return CertificateRequest(
-        certificate_types=[
-            ClientCertificateType(cert_type)
-            for cert_type in construct.certificate_types.certificate_types
-        ],
-        supported_signature_algorithms=[
-            SignatureAndHashAlgorithm(
-                hash=HashAlgorithm(algorithm.hash),
-                signature=SignatureAlgorithm(algorithm.signature),
-            )
-            for algorithm in (
-                construct.supported_signature_algorithms.algorithms
-            )
-        ],
-        certificate_authorities=(
-            construct.certificate_authorities.certificate_authorities
-        )
-    )

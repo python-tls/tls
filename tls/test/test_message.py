@@ -9,8 +9,7 @@ from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 from tls.message import (
     Certificate, CertificateRequest, ClientCertificateType, Finished,
     Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
-    ServerDHParams, ServerHelloDone, SignatureAlgorithm,
-    parse_certificate_request
+    ServerDHParams, ServerHelloDone, SignatureAlgorithm
 )
 
 
@@ -38,7 +37,7 @@ class TestCertificateRequestParsing(object):
     )
 
     def test_parse_certificate_request(self):
-        record = parse_certificate_request(self.no_authorities_packet)
+        record = CertificateRequest.from_bytes(self.no_authorities_packet)
         assert record.certificate_types == [ClientCertificateType.RSA_SIGN]
         assert len(record.supported_signature_algorithms) == 1
         assert record.supported_signature_algorithms[0].hash == \
@@ -48,15 +47,15 @@ class TestCertificateRequestParsing(object):
         assert record.certificate_authorities == b''
 
     def test_parse_certificate_request_with_authorities(self):
-        record = parse_certificate_request(self.with_authorities_packet)
+        record = CertificateRequest.from_bytes(self.with_authorities_packet)
         assert record.certificate_authorities == b'03'
 
     def test_as_bytes_no_authoritites(self):
-        record = parse_certificate_request(self.no_authorities_packet)
+        record = CertificateRequest.from_bytes(self.no_authorities_packet)
         assert record.as_bytes() == self.no_authorities_packet
 
     def test_as_bytes_with_authoritites(self):
-        record = parse_certificate_request(self.with_authorities_packet)
+        record = CertificateRequest.from_bytes(self.with_authorities_packet)
         assert record.as_bytes() == self.with_authorities_packet
 
 
