@@ -10,7 +10,7 @@ from tls.message import (
     Certificate, CertificateRequest, ClientCertificateType, Finished,
     Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
     ServerDHParams, ServerHelloDone, SignatureAlgorithm, parse_certificate,
-    parse_certificate_request, parse_pre_master_secret
+    parse_certificate_request
 )
 
 
@@ -92,7 +92,7 @@ class TestPreMasterSecretParsing(object):
             b'\x03\x00'  # ClientHello.client_version
             + r
         )
-        record = parse_pre_master_secret(packet)
+        record = PreMasterSecret.from_bytes(packet)
         assert isinstance(record, PreMasterSecret)
         assert isinstance(record.client_version, ProtocolVersion)
         assert record.client_version.major == 3

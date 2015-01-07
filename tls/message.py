@@ -139,6 +139,22 @@ class PreMasterSecret(object):
     """
     An object representing a PreMasterSecret struct.
     """
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``PreMasterSecret`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: CertificateRequest object.
+        """
+        construct = _constructs.PreMasterSecret.parse(bytes)
+        return cls(
+            client_version=ProtocolVersion(
+                major=construct.version.major,
+                minor=construct.version.minor,
+            ),
+            random=construct.random_bytes,
+        )
 
 
 @attributes(['asn1_cert'])
@@ -241,23 +257,6 @@ def parse_certificate_request(bytes):
         certificate_authorities=(
             construct.certificate_authorities.certificate_authorities
         )
-    )
-
-
-def parse_pre_master_secret(bytes):
-    """
-    Parse a ``PreMasterSecret`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: CertificateRequest object.
-    """
-    construct = _constructs.PreMasterSecret.parse(bytes)
-    return PreMasterSecret(
-        client_version=ProtocolVersion(
-            major=construct.version.major,
-            minor=construct.version.minor,
-        ),
-        random=construct.random_bytes,
     )
 
 
