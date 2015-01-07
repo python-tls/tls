@@ -184,6 +184,23 @@ class Handshake(object):
             )
         )
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``Handshake`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: Handshake object.
+        """
+        construct = _constructs.Handshake.parse(bytes)
+        return cls(
+            msg_type=HandshakeType(construct.msg_type),
+            length=construct.length,
+            body=_get_handshake_message(
+                HandshakeType(construct.msg_type), construct.body
+            ),
+        )
+
 
 def parse_certificate_request(bytes):
     """
@@ -297,20 +314,3 @@ def _get_handshake_message(msg_type, body):
             return _handshake_message_parser[msg_type](body)
     except NotImplementedError:
         return None     # TODO
-
-
-def parse_handshake_struct(bytes):
-    """
-    Parse a ``Handshake`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: Handshake object.
-    """
-    construct = _constructs.Handshake.parse(bytes)
-    return Handshake(
-        msg_type=HandshakeType(construct.msg_type),
-        length=construct.length,
-        body=_get_handshake_message(
-            HandshakeType(construct.msg_type), construct.body
-        ),
-    )
