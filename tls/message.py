@@ -105,6 +105,34 @@ class CertificateRequest(object):
             )
         ))
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``CertificateRequest`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: CertificateRequest object.
+        """
+        construct = _constructs.CertificateRequest.parse(bytes)
+        return cls(
+            certificate_types=[
+                ClientCertificateType(cert_type)
+                for cert_type in construct.certificate_types.certificate_types
+            ],
+            supported_signature_algorithms=[
+                SignatureAndHashAlgorithm(
+                    hash=HashAlgorithm(algorithm.hash),
+                    signature=SignatureAlgorithm(algorithm.signature),
+                )
+                for algorithm in (
+                    construct.supported_signature_algorithms.algorithms
+                )
+            ],
+            certificate_authorities=(
+                construct.certificate_authorities.certificate_authorities
+            )
+        )
+
 
 @attributes(['hash', 'signature'])
 class SignatureAndHashAlgorithm(object):
@@ -118,6 +146,20 @@ class ServerDHParams(object):
     """
     An object representing a ServerDHParams struct.
     """
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``ServerDHParams`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: ServerDHParams object.
+        """
+        construct = _constructs.ServerDHParams.parse(bytes)
+        return cls(
+            dh_p=construct.dh_p,
+            dh_g=construct.dh_g,
+            dh_Ys=construct.dh_Ys
+        )
 
 
 @attributes(['client_version', 'random'])
@@ -125,6 +167,22 @@ class PreMasterSecret(object):
     """
     An object representing a PreMasterSecret struct.
     """
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``PreMasterSecret`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: CertificateRequest object.
+        """
+        construct = _constructs.PreMasterSecret.parse(bytes)
+        return cls(
+            client_version=ProtocolVersion(
+                major=construct.version.major,
+                minor=construct.version.minor,
+            ),
+            random=construct.random_bytes,
+        )
 
 
 @attributes(['asn1_cert'])
@@ -153,6 +211,30 @@ class Certificate(object):
             )
 
         ))
+
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``Certificate`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: Certificate object.
+        """
+        construct = _constructs.Certificate.parse(bytes)
+        # XXX: Find a better way to parse an array of variable-length objects
+        certificates = []
+        certificates_io = BytesIO(construct.certificates_bytes)
+
+        while certificates_io.tell() < construct.certificates_length:
+            certificate_construct = _constructs.ASN1Cert.parse_stream(
+                certificates_io
+            )
+            certificates.append(
+                ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
+            )
+        return cls(
+            certificate_list=certificates
+        )
 
 
 @attributes(['verify_data'])
@@ -184,133 +266,48 @@ class Handshake(object):
             )
         )
 
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``Handshake`` struct.
 
-def parse_certificate_request(bytes):
-    """
-    Parse a ``CertificateRequest`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: CertificateRequest object.
-    """
-    construct = _constructs.CertificateRequest.parse(bytes)
-    return CertificateRequest(
-        certificate_types=[
-            ClientCertificateType(cert_type)
-            for cert_type in construct.certificate_types.certificate_types
-        ],
-        supported_signature_algorithms=[
-            SignatureAndHashAlgorithm(
-                hash=HashAlgorithm(algorithm.hash),
-                signature=SignatureAlgorithm(algorithm.signature),
-            )
-            for algorithm in (
-                construct.supported_signature_algorithms.algorithms
-            )
-        ],
-        certificate_authorities=(
-            construct.certificate_authorities.certificate_authorities
+        :param bytes: the bytes representing the input.
+        :return: Handshake object.
+        """
+        construct = _constructs.Handshake.parse(bytes)
+        return cls(
+            msg_type=HandshakeType(construct.msg_type),
+            length=construct.length,
+            body=cls._get_handshake_message(
+                HandshakeType(construct.msg_type), construct.body
+            ),
         )
-    )
 
+    @staticmethod
+    def _get_handshake_message(msg_type, body):
+        _handshake_message_parser = {
+            HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
+            HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
+            HandshakeType.CERTIFICATE: Certificate.from_bytes,
+            #    12: parse_server_key_exchange,
+            HandshakeType.CERTIFICATE_REQUEST: CertificateRequest.from_bytes,
+            #    15: parse_certificate_verify,
+            #    16: parse_client_key_exchange,
+        }
 
-def parse_server_dh_params(bytes):
-    """
-    Parse a ``ServerDHParams`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: ServerDHParams object.
-    """
-    construct = _constructs.ServerDHParams.parse(bytes)
-    return ServerDHParams(
-        dh_p=construct.dh_p,
-        dh_g=construct.dh_g,
-        dh_Ys=construct.dh_Ys
-    )
-
-
-def parse_pre_master_secret(bytes):
-    """
-    Parse a ``PreMasterSecret`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: CertificateRequest object.
-    """
-    construct = _constructs.PreMasterSecret.parse(bytes)
-    return PreMasterSecret(
-        client_version=ProtocolVersion(
-            major=construct.version.major,
-            minor=construct.version.minor,
-        ),
-        random=construct.random_bytes,
-    )
-
-
-def parse_certificate(bytes):
-    """
-    Parse a ``Certificate`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: Certificate object.
-    """
-    construct = _constructs.Certificate.parse(bytes)
-    # XXX: Find a better way to parse an array of variable-length objects
-    certificates = []
-    certificates_io = BytesIO(construct.certificates_bytes)
-
-    while certificates_io.tell() < construct.certificates_length:
-        certificate_construct = _constructs.ASN1Cert.parse_stream(
-            certificates_io
-        )
-        certificates.append(
-            ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
-        )
-    return Certificate(
-        certificate_list=certificates
-    )
-
-
-_handshake_message_parser = {
-    HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
-    HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
-    HandshakeType.CERTIFICATE: parse_certificate,
-    #    12: parse_server_key_exchange,
-    HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
-    #    15: parse_certificate_verify,
-    #    16: parse_client_key_exchange,
-}
-
-
-def _get_handshake_message(msg_type, body):
-    try:
-        if msg_type == HandshakeType.HELLO_REQUEST:
-            return HelloRequest()
-        elif msg_type == HandshakeType.SERVER_HELLO_DONE:
-            return ServerHelloDone()
-        elif msg_type == HandshakeType.FINISHED:
-            return Finished(verify_data=body)
-        elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
-                          HandshakeType.CERTIFICATE_VERIFY,
-                          HandshakeType.CLIENT_KEY_EXCHANGE,
-                          ]:
-            raise NotImplementedError
-        else:
-            return _handshake_message_parser[msg_type](body)
-    except NotImplementedError:
-        return None     # TODO
-
-
-def parse_handshake_struct(bytes):
-    """
-    Parse a ``Handshake`` struct.
-
-    :param bytes: the bytes representing the input.
-    :return: Handshake object.
-    """
-    construct = _constructs.Handshake.parse(bytes)
-    return Handshake(
-        msg_type=HandshakeType(construct.msg_type),
-        length=construct.length,
-        body=_get_handshake_message(
-            HandshakeType(construct.msg_type), construct.body
-        ),
-    )
+        try:
+            if msg_type == HandshakeType.HELLO_REQUEST:
+                return HelloRequest()
+            elif msg_type == HandshakeType.SERVER_HELLO_DONE:
+                return ServerHelloDone()
+            elif msg_type == HandshakeType.FINISHED:
+                return Finished(verify_data=body)
+            elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
+                              HandshakeType.CERTIFICATE_VERIFY,
+                              HandshakeType.CLIENT_KEY_EXCHANGE,
+                              ]:
+                raise NotImplementedError
+            else:
+                return _handshake_message_parser[msg_type](body)
+        except NotImplementedError:
+            return None     # TODO

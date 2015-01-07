@@ -9,9 +9,7 @@ from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 from tls.message import (
     Certificate, CertificateRequest, ClientCertificateType, Finished,
     Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
-    ServerHelloDone, SignatureAlgorithm, parse_certificate,
-    parse_certificate_request, parse_handshake_struct, parse_pre_master_secret,
-    parse_server_dh_params
+    ServerDHParams, ServerHelloDone, SignatureAlgorithm
 )
 
 
@@ -39,7 +37,7 @@ class TestCertificateRequestParsing(object):
     )
 
     def test_parse_certificate_request(self):
-        record = parse_certificate_request(self.no_authorities_packet)
+        record = CertificateRequest.from_bytes(self.no_authorities_packet)
         assert record.certificate_types == [ClientCertificateType.RSA_SIGN]
         assert len(record.supported_signature_algorithms) == 1
         assert record.supported_signature_algorithms[0].hash == \
@@ -49,15 +47,15 @@ class TestCertificateRequestParsing(object):
         assert record.certificate_authorities == b''
 
     def test_parse_certificate_request_with_authorities(self):
-        record = parse_certificate_request(self.with_authorities_packet)
+        record = CertificateRequest.from_bytes(self.with_authorities_packet)
         assert record.certificate_authorities == b'03'
 
     def test_as_bytes_no_authoritites(self):
-        record = parse_certificate_request(self.no_authorities_packet)
+        record = CertificateRequest.from_bytes(self.no_authorities_packet)
         assert record.as_bytes() == self.no_authorities_packet
 
     def test_as_bytes_with_authoritites(self):
-        record = parse_certificate_request(self.with_authorities_packet)
+        record = CertificateRequest.from_bytes(self.with_authorities_packet)
         assert record.as_bytes() == self.with_authorities_packet
 
 
@@ -75,7 +73,7 @@ class TestServerDHParamsparsing(object):
             b'\x00\x02'
             b'78'
         )
-        record = parse_server_dh_params(packet)
+        record = ServerDHParams.from_bytes(packet)
         assert record.dh_p == b'123'
         assert record.dh_g == b'5678'
         assert record.dh_Ys == b'78'
@@ -93,7 +91,7 @@ class TestPreMasterSecretParsing(object):
             b'\x03\x00'  # ClientHello.client_version
             + r
         )
-        record = parse_pre_master_secret(packet)
+        record = PreMasterSecret.from_bytes(packet)
         assert isinstance(record, PreMasterSecret)
         assert isinstance(record.client_version, ProtocolVersion)
         assert record.client_version.major == 3
@@ -112,13 +110,13 @@ class TestCertificateParsing(object):
     )
 
     def test_parse_certificate(self):
-        record = parse_certificate(self.packet)
+        record = Certificate.from_bytes(self.packet)
         assert isinstance(record, Certificate)
         assert len(record.certificate_list) == 1
         assert record.certificate_list[0].asn1_cert == b'ABC'
 
     def test_as_bytes(self):
-        record = parse_certificate(self.packet)
+        record = Certificate.from_bytes(self.packet)
         assert record.as_bytes() == self.packet
 
 
@@ -217,21 +215,21 @@ class TestHandshakeStructParsing(object):
     )
 
     def test_parse_client_hello_in_handshake(self):
-        record = parse_handshake_struct(self.client_hello_handshake_packet)
+        record = Handshake.from_bytes(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.CLIENT_HELLO
         assert record.length == 51
         assert isinstance(record.body, ClientHello)
 
     def test_parse_server_hello_in_handshake(self):
-        record = parse_handshake_struct(self.server_hello_handshake_packet)
+        record = Handshake.from_bytes(self.server_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.SERVER_HELLO
         assert record.length == 80
         assert isinstance(record.body, ServerHello)
 
     def test_parse_certificate_request_in_handshake(self):
-        record = parse_handshake_struct(
+        record = Handshake.from_bytes(
             self.certificate_request_handshake
         )
         assert isinstance(record, Handshake)
@@ -240,35 +238,35 @@ class TestHandshakeStructParsing(object):
         assert isinstance(record.body, CertificateRequest)
 
     def test_parse_certificate_in_handshake(self):
-        record = parse_handshake_struct(self.certificate_handshake_packet)
+        record = Handshake.from_bytes(self.certificate_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.CERTIFICATE
         assert record.length == 11
         assert isinstance(record.body, Certificate)
 
     def test_parse_hello_request(self):
-        record = parse_handshake_struct(self.hello_request_handshake)
+        record = Handshake.from_bytes(self.hello_request_handshake)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.HELLO_REQUEST
         assert record.length == 0
         assert isinstance(record.body, HelloRequest)
 
     def test_server_hello_done(self):
-        record = parse_handshake_struct(self.server_hello_done_handshake)
+        record = Handshake.from_bytes(self.server_hello_done_handshake)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.SERVER_HELLO_DONE
         assert record.length == 0
         assert isinstance(record.body, ServerHelloDone)
 
     def test_not_implemented(self):
-        record = parse_handshake_struct(self.server_key_exchange_handshake)
+        record = Handshake.from_bytes(self.server_key_exchange_handshake)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.SERVER_KEY_EXCHANGE
         assert record.length == 0
         assert record.body is None
 
     def test_finished(self):
-        record = parse_handshake_struct(self.finished_handshake)
+        record = Handshake.from_bytes(self.finished_handshake)
         assert isinstance(record, Handshake)
         assert record.msg_type == HandshakeType.FINISHED
         assert record.length == 20
@@ -276,33 +274,33 @@ class TestHandshakeStructParsing(object):
         assert record.body.verify_data == b'some-encrypted-bytes'
 
     def test_as_bytes_server_hello_packet(self):
-        record = parse_handshake_struct(self.server_hello_handshake_packet)
+        record = Handshake.from_bytes(self.server_hello_handshake_packet)
         assert record.as_bytes() == self.server_hello_handshake_packet
 
     def test_as_bytes_client_hello_packet(self):
-        record = parse_handshake_struct(self.client_hello_handshake_packet)
+        record = Handshake.from_bytes(self.client_hello_handshake_packet)
         assert record.as_bytes() == self.client_hello_handshake_packet
 
     def test_as_bytes_certificate_packet(self):
-        record = parse_handshake_struct(self.certificate_handshake_packet)
+        record = Handshake.from_bytes(self.certificate_handshake_packet)
         assert record.as_bytes() == self.certificate_handshake_packet
 
     def test_as_bytes_certificate_request_packet(self):
-        record = parse_handshake_struct(self.certificate_request_handshake)
+        record = Handshake.from_bytes(self.certificate_request_handshake)
         assert record.as_bytes() == self.certificate_request_handshake
 
     def test_as_bytes_not_implemented(self):
-        record = parse_handshake_struct(self.server_key_exchange_handshake)
+        record = Handshake.from_bytes(self.server_key_exchange_handshake)
         assert record.as_bytes() == self.server_key_exchange_handshake
 
     def test_as_bytes_hello_request(self):
-        record = parse_handshake_struct(self.hello_request_handshake)
+        record = Handshake.from_bytes(self.hello_request_handshake)
         assert record.as_bytes() == self.hello_request_handshake
 
     def test_as_bytes_server_hello_done(self):
-        record = parse_handshake_struct(self.server_hello_done_handshake)
+        record = Handshake.from_bytes(self.server_hello_done_handshake)
         assert record.as_bytes() == self.server_hello_done_handshake
 
     def test_as_bytes_finished(self):
-        record = parse_handshake_struct(self.finished_handshake)
+        record = Handshake.from_bytes(self.finished_handshake)
         assert record.as_bytes() == self.finished_handshake
