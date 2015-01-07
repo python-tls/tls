@@ -233,6 +233,16 @@ class Handshake(object):
 
     @staticmethod
     def _get_handshake_message(msg_type, body):
+        _handshake_message_parser = {
+            HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
+            HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
+            HandshakeType.CERTIFICATE: parse_certificate,
+            #    12: parse_server_key_exchange,
+            HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
+            #    15: parse_certificate_verify,
+            #    16: parse_client_key_exchange,
+        }
+
         try:
             if msg_type == HandshakeType.HELLO_REQUEST:
                 return HelloRequest()
@@ -301,14 +311,3 @@ def parse_certificate(bytes):
     return Certificate(
         certificate_list=certificates
     )
-
-
-_handshake_message_parser = {
-    HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
-    HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
-    HandshakeType.CERTIFICATE: parse_certificate,
-    #    12: parse_server_key_exchange,
-    HandshakeType.CERTIFICATE_REQUEST: parse_certificate_request,
-    #    15: parse_certificate_verify,
-    #    16: parse_client_key_exchange,
-}
