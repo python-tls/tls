@@ -226,10 +226,29 @@ class Handshake(object):
         return cls(
             msg_type=HandshakeType(construct.msg_type),
             length=construct.length,
-            body=_get_handshake_message(
+            body=cls._get_handshake_message(
                 HandshakeType(construct.msg_type), construct.body
             ),
         )
+
+    @staticmethod
+    def _get_handshake_message(msg_type, body):
+        try:
+            if msg_type == HandshakeType.HELLO_REQUEST:
+                return HelloRequest()
+            elif msg_type == HandshakeType.SERVER_HELLO_DONE:
+                return ServerHelloDone()
+            elif msg_type == HandshakeType.FINISHED:
+                return Finished(verify_data=body)
+            elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
+                              HandshakeType.CERTIFICATE_VERIFY,
+                              HandshakeType.CLIENT_KEY_EXCHANGE,
+                              ]:
+                raise NotImplementedError
+            else:
+                return _handshake_message_parser[msg_type](body)
+        except NotImplementedError:
+            return None     # TODO
 
 
 def parse_certificate_request(bytes):
@@ -293,22 +312,3 @@ _handshake_message_parser = {
     #    15: parse_certificate_verify,
     #    16: parse_client_key_exchange,
 }
-
-
-def _get_handshake_message(msg_type, body):
-    try:
-        if msg_type == HandshakeType.HELLO_REQUEST:
-            return HelloRequest()
-        elif msg_type == HandshakeType.SERVER_HELLO_DONE:
-            return ServerHelloDone()
-        elif msg_type == HandshakeType.FINISHED:
-            return Finished(verify_data=body)
-        elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
-                          HandshakeType.CERTIFICATE_VERIFY,
-                          HandshakeType.CLIENT_KEY_EXCHANGE,
-                          ]:
-            raise NotImplementedError
-        else:
-            return _handshake_message_parser[msg_type](body)
-    except NotImplementedError:
-        return None     # TODO
