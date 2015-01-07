@@ -9,9 +9,8 @@ from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 from tls.message import (
     Certificate, CertificateRequest, ClientCertificateType, Finished,
     Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
-    ServerHelloDone, SignatureAlgorithm, parse_certificate,
-    parse_certificate_request, parse_pre_master_secret,
-    parse_server_dh_params
+    ServerDHParams, ServerHelloDone, SignatureAlgorithm, parse_certificate,
+    parse_certificate_request, parse_pre_master_secret
 )
 
 
@@ -75,7 +74,7 @@ class TestServerDHParamsparsing(object):
             b'\x00\x02'
             b'78'
         )
-        record = parse_server_dh_params(packet)
+        record = ServerDHParams.from_bytes(packet)
         assert record.dh_p == b'123'
         assert record.dh_g == b'5678'
         assert record.dh_Ys == b'78'
