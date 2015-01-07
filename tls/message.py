@@ -311,6 +311,3 @@ class Handshake(object):
                 return _handshake_message_parser[msg_type](body)
         except NotImplementedError:
             return None     # TODO
-
-
-
