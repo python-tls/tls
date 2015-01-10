@@ -6,6 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
+from tls.exceptions import UnsupportedCipherException
+
 
 class CipherSuites(Enum):
     TLS_NULL_WITH_NULL_NULL = 0x0000
@@ -336,6 +338,6 @@ def select_preferred_ciphersuite(client_supported, server_supported):
         if i in client_supported:
             return i
     else:
-        raise ValueError(
+        raise UnsupportedCipherException(
             "Client supported ciphersuites are not supported on the server."
         )
