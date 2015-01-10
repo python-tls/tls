@@ -328,3 +328,14 @@ class CipherSuites(Enum):
     TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8 = 0xC0AF
     TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 = 0xCC14
     TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 = 0xCC13
+
+
+def select_preferred_ciphersuite(client_supported, server_supported):
+    for i in server_supported:
+        assert isinstance(i, CipherSuites)
+        if i in client_supported:
+            return i
+    else:
+        raise ValueError(
+            "Client supported ciphersuites are not supported on the server."
+        )
