@@ -337,7 +337,7 @@ def select_preferred_ciphersuite(client_supported, server_supported):
         assert isinstance(i, CipherSuites)
         if i in client_supported:
             return i
-    else:
-        raise UnsupportedCipherException(
-            "Client supported ciphersuites are not supported on the server."
-        )
+
+    raise UnsupportedCipherException(
+        "Client supported ciphersuites are not supported on the server."
+    )
