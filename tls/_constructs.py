@@ -54,7 +54,7 @@ SessionID = Struct(
 CipherSuites = Struct(
     "cipher_suites",
     UBInt16("length"),  # TODO: Reject packets of length 0
-    Array(lambda ctx: ctx.length / 2, Bytes("cipher_suites", 2)),
+    Array(lambda ctx: ctx.length // 2, UBInt16("cipher_suites")),
 )
 
 CompressionMethods = Struct(
