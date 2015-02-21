@@ -94,7 +94,7 @@ large major part left before I am able to make a release.
 Example Use
 ===========
 A basic design for an example usage of this library using Twisted can be `found
-here`_. Note that this **not** a self-contained working sample code, its
+here`_. Note that this is **not** a self-contained working sample code, its
 purpose is to just give you an idea of what it would potentially look like to
 use, once the implementation is more complete)
 
