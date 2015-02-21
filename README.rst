@@ -96,14 +96,14 @@ Example Use
 A basic design for an example usage of this library using Twisted can be `found
 here`_. Note that this is **not** a self-contained working sample code, its
 purpose is to just give you an idea of what it would potentially look like to
-use, once the implementation is more complete)
+use, once the implementation is more complete.
 
 
 Acknowledgements
 ================
 
-PyCA's TLS is being developed as one of the projects under `Stripe's Open
-Source Retreat`_ by Ashwini Oruganti, but also includes code and reviews from
+PyCA's TLS was being developed as one of the projects under `Stripe's Open
+Source Retreat`_ by Ashwini Oruganti. It also includes code and reviews from
 other members of the PyCA community.
 
 
