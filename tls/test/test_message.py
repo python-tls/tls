@@ -88,8 +88,7 @@ class TestPreMasterSecretParsing(object):
         import os
         r = os.urandom(46)
         packet = (
-            b'\x03\x00'  # ClientHello.client_version
-            + r
+            b'\x03\x00' + r  # ClientHello.client_version + random
         )
         record = PreMasterSecret.from_bytes(packet)
         assert isinstance(record, PreMasterSecret)
