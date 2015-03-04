@@ -4,7 +4,7 @@ tls
 .. image:: https://travis-ci.org/pyca/tls.svg?branch=master
     :target: https://travis-ci.org/pyca/tls
 
-.. image:: https://coveralls.io/repos/pyca/tls/badge.png?branch=master
+.. image:: https://coveralls.io/repos/pyca/tls/badge.svg?branch=master
     :target: https://coveralls.io/r/pyca/tls?branch=master
 
 
