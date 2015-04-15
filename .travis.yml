@@ -1,23 +1,27 @@
 language: python
+sudo: false
 
-env:
-    matrix:
-        - TOX_ENV=py26
-        - TOX_ENV=py27
-        - TOX_ENV=py32
-        - TOX_ENV=py33
-        - TOX_ENV=py34
-        - TOX_ENV=pypy
-        - TOX_ENV=docs
-        - TOX_ENV=pep8
-        - TOX_ENV=py3pep8
+matrix:
+    include:
+        - env: TOXENV=py26
+        - env: TOXENV=py27
+        - env: TOXENV=py32
+        - env: TOXENV=py33
+        - env: TOXENV=py34
+        - env: TOXENV=pypy
+        - env: TOXENV=docs
+          addons:
+              apt:
+                  packages:
+                      - libenchant-dev
+        - env: TOX_ENV=pep8
+        - env: TOX_ENV=py3pep8
 
 install:
     - pip install coveralls tox
-    - sudo apt-get install libenchant-dev
 
 script:
-    - tox -e $TOX_ENV
+    - tox
 
 after_success:
     - coveralls
