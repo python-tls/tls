@@ -14,8 +14,8 @@ matrix:
               apt:
                   packages:
                       - libenchant-dev
-        - env: TOX_ENV=pep8
-        - env: TOX_ENV=py3pep8
+        - env: TOXENV=pep8
+        - env: TOXENV=py3pep8
 
 install:
     - pip install coveralls tox
