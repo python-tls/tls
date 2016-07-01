@@ -3,9 +3,7 @@ sudo: false
 
 matrix:
     include:
-        - env: TOXENV=py26
         - env: TOXENV=py27
-        - env: TOXENV=py32
         - env: TOXENV=py33
         - env: TOXENV=py34
         - env: TOXENV=pypy
