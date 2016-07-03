@@ -56,8 +56,7 @@ class ClientHello(object):
                 ),
                 session_id=Container(length=len(self.session_id),
                                      session_id=self.session_id),
-                cipher_suites=Container(length=len(self.cipher_suites) * 2,
-                                        cipher_suites=self.cipher_suites),
+                cipher_suites=self.cipher_suites,
                 compression_methods=Container(
                     length=len(self.compression_methods),
                     compression_methods=self.compression_methods
@@ -99,8 +98,7 @@ class ClientHello(object):
                 random_bytes=construct.random.random_bytes,
             ),
             session_id=construct.session_id.session_id,
-            # TODO: cipher suites should be enums
-            cipher_suites=construct.cipher_suites.cipher_suites,
+            cipher_suites=construct.cipher_suites,
             compression_methods=(
                 construct.compression_methods.compression_methods
             ),

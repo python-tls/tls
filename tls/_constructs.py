@@ -6,7 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 
-from tls.utils import UBInt24
+from tls.ciphersuites import CipherSuites
+from tls.utils import EnumClass, PrefixedBytes, TLSPrefixedArray, UBInt24
 
 
 ProtocolVersion = Struct(
@@ -19,24 +20,24 @@ TLSPlaintext = Struct(
     "TLSPlaintext",
     UBInt8("type"),
     ProtocolVersion,
-    UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14
-    Bytes("fragment", lambda ctx: ctx.length),
+    # TODO: Reject packets with length > 2 ** 14
+    PrefixedBytes("fragment", UBInt16("length")),
 )
 
 TLSCompressed = Struct(
     "TLSCompressed",
     UBInt8("type"),
     ProtocolVersion,
-    UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 1024
-    Bytes("fragment", lambda ctx: ctx.length),
+    # TODO: Reject packets with length > 2 ** 14 + 1024
+    PrefixedBytes("fragment", UBInt16("length")),
 )
 
 TLSCiphertext = Struct(
     "TLSCiphertext",
     UBInt8("type"),
     ProtocolVersion,
-    UBInt16("length"),  # TODO: Reject packets with length > 2 ** 14 + 2048
-    Bytes("fragment", lambda ctx: ctx.length),
+    # TODO: Reject packets with length > 2 ** 14 + 2048
+    PrefixedBytes("fragment", UBInt16("length")),
 )
 
 Random = Struct(
@@ -47,15 +48,9 @@ Random = Struct(
 
 SessionID = Struct(
     "session_id",
-    UBInt8("length"),
-    Bytes("session_id", lambda ctx: ctx.length),
+    PrefixedBytes("session_id"),
 )
 
-CipherSuites = Struct(
-    "cipher_suites",
-    UBInt16("length"),  # TODO: Reject packets of length 0
-    Array(lambda ctx: ctx.length // 2, UBInt16("cipher_suites")),
-)
 
 CompressionMethods = Struct(
     "compression_methods",
@@ -66,8 +61,7 @@ CompressionMethods = Struct(
 Extension = Struct(
     "extensions",
     UBInt16("type"),
-    UBInt16("length"),
-    Bytes("data", lambda ctx: ctx.length),
+    PrefixedBytes("data", UBInt16("length")),
 )
 
 ClientHello = Struct(
@@ -75,7 +69,8 @@ ClientHello = Struct(
     ProtocolVersion,
     Random,
     SessionID,
-    CipherSuites,
+    # TODO: reject hellos with cipher_suites of length 0
+    TLSPrefixedArray(EnumClass(UBInt8("cipher_suites"), CipherSuites)),
     CompressionMethods,
     UBInt16("extensions_length"),
     Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
@@ -129,12 +124,9 @@ CertificateRequest = Struct(
 
 ServerDHParams = Struct(
     "ServerDHParams",
-    UBInt16("dh_p_length"),
-    Bytes("dh_p", lambda ctx: ctx.dh_p_length),
-    UBInt16("dh_g_length"),
-    Bytes("dh_g", lambda ctx: ctx.dh_g_length),
-    UBInt16("dh_Ys_length"),
-    Bytes("dh_Ys", lambda ctx: ctx.dh_Ys_length),
+    PrefixedBytes("dh_p", UBInt16("dh_p_length")),
+    PrefixedBytes("dh_g", UBInt16("dh_g_length")),
+    PrefixedBytes("dh_Ys", UBInt16("dh_Ys_length")),
 )
 
 PreMasterSecret = Struct(

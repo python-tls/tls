@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from tls.ciphersuites import CipherSuites
+
 from tls.hello_message import (
     ClientHello, CompressionMethod, ExtensionType, ServerHello
 )
@@ -57,7 +59,10 @@ class TestClientHello(object):
         assert record.random.gmt_unix_time == 16909060
         assert record.random.random_bytes == b'0123456789012345678901234567'
         assert record.session_id == b'01234567890123456789012345678901'
-        assert record.cipher_suites == [0x006b]
+        assert record.cipher_suites == [
+            CipherSuites.TLS_NULL_WITH_NULL_NULL,
+            CipherSuites.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,
+        ]
         assert record.compression_methods == [0]
         assert len(record.extensions) == 0
 
