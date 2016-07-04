@@ -119,6 +119,7 @@ def EnumSwitch(type_field, type_enum, value_field, value_choices):  # noqa
     be spliced into another :py:func:`construct.Construct`'s
     definition:
 
+    >>> from tls.utils import EnumSwitch
     >>> import construct, enum
     >>> class IntEnum(enum.Enum):
     ...     VALUE = 1

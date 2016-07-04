@@ -20,6 +20,12 @@ install:
 
 script:
     - tox
+    - |
+        SPELLING_OUTPUT=/home/travis/build/pyca/tls/docs/_build/html/output.txt
+        if [ -f $SPELLING_OUTPUT ]
+        then
+            cat $SPELLING_OUTPUT
+        fi
 
 after_success:
     - coveralls

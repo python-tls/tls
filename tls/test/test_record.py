@@ -103,8 +103,8 @@ class TestTLSCompressedParsing(object):
 
     def test_parse_tls_compressed_handshake(self):
         """
-        :class:`TLSCmpressed`, which has attributes representing all the fields
-        in the TLSCompressed struct.
+        :class:`TLSCompressed`, which has attributes representing all
+        the fields in the TLSCompressed struct.
         """
         packet = (
             b'\x16'  # type

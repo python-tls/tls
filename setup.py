@@ -17,5 +17,6 @@ setuptools.setup(
         "construct",
         "enum34",
         "characteristic",
-    ]
+    ],
+    packages=setuptools.find_packages()
 )

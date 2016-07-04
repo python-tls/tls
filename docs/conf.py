@@ -271,6 +271,9 @@ texinfo_documents = [
 # texinfo_show_urls = 'footnote'
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
-
+intersphinx_mapping = {
+    'python2': ('https://docs.python.org/2/', None),
+    'python3': ('https://docs.python.org/3/', None),
+    'construct': ('https://construct.readthedocs.io/en/latest/', None),
+}
 epub_theme = 'epub'
