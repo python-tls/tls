@@ -14,9 +14,9 @@ setuptools.setup(
     description="tls",
     long_description="tls",
     install_requires=[
+        "attrs",
         "construct",
         "enum34",
-        "characteristic",
     ],
     packages=setuptools.find_packages()
 )

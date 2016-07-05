@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from characteristic import attributes
+import attr
 
 from construct import Container
 
@@ -75,12 +75,15 @@ class ServerHelloDone(object):
         return b''
 
 
-@attributes(['certificate_types', 'supported_signature_algorithms',
-             'certificate_authorities'])
+@attr.s
 class CertificateRequest(object):
     """
     An object representing a CertificateRequest struct.
     """
+    certificate_types = attr.ib()
+    supported_signature_algorithms = attr.ib()
+    certificate_authorities = attr.ib()
+
     def as_bytes(self):
         return _constructs.CertificateRequest.build(Container(
             certificate_types=Container(
@@ -134,18 +137,24 @@ class CertificateRequest(object):
         )
 
 
-@attributes(['hash', 'signature'])
+@attr.s
 class SignatureAndHashAlgorithm(object):
     """
     An object representing a SignatureAndHashAlgorithm struct.
     """
+    hash = attr.ib()
+    signature = attr.ib()
 
 
-@attributes(['dh_p', 'dh_g', 'dh_Ys'])
+@attr.s
 class ServerDHParams(object):
     """
     An object representing a ServerDHParams struct.
     """
+    dh_p = attr.ib()
+    dh_g = attr.ib()
+    dh_Ys = attr.ib()
+
     @classmethod
     def from_bytes(cls, bytes):
         """
@@ -162,11 +171,14 @@ class ServerDHParams(object):
         )
 
 
-@attributes(['client_version', 'random'])
+@attr.s
 class PreMasterSecret(object):
     """
     An object representing a PreMasterSecret struct.
     """
+    client_version = attr.ib()
+    random = attr.ib()
+
     @classmethod
     def from_bytes(cls, bytes):
         """
@@ -185,11 +197,13 @@ class PreMasterSecret(object):
         )
 
 
-@attributes(['asn1_cert'])
+@attr.s
 class ASN1Cert(object):
     """
     An object representing ASN.1 Certificate
     """
+    asn1_cert = attr.ib()
+
     def as_bytes(self):
         return _constructs.ASN1Cert.build(Container(
             length=len(self.asn1_cert),
@@ -197,11 +211,13 @@ class ASN1Cert(object):
         ))
 
 
-@attributes(['certificate_list'])
+@attr.s
 class Certificate(object):
     """
     An object representing a Certificate struct.
     """
+    certificate_list = attr.ib()
+
     def as_bytes(self):
         return _constructs.Certificate.build(Container(
             certificates_length=sum([4 + len(asn1cert.asn1_cert)
@@ -237,17 +253,23 @@ class Certificate(object):
         )
 
 
-@attributes(['verify_data'])
+@attr.s
 class Finished(object):
+    verify_data = attr.ib()
+
     def as_bytes(self):
         return self.verify_data
 
 
-@attributes(['msg_type', 'length', 'body'])
+@attr.s
 class Handshake(object):
     """
     An object representing a Handshake struct.
     """
+    msg_type = attr.ib()
+    length = attr.ib()
+    body = attr.ib()
+
     def as_bytes(self):
         if self.msg_type in [
             HandshakeType.SERVER_HELLO, HandshakeType.CLIENT_HELLO,

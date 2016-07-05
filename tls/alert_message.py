@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from characteristic import attributes
+import attr
 
 from tls import _constructs
 
@@ -44,11 +44,14 @@ class AlertDescription(Enum):
     UNSUPPORTED_EXTENSION = 110
 
 
-@attributes(['level', 'description'])
+@attr.s
 class Alert(object):
     """
     An object representing an Alert message.
     """
+    level = attr.ib()
+    description = attr.ib()
+
     @classmethod
     def from_bytes(cls, bytes):
         """

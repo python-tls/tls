@@ -6,25 +6,31 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from characteristic import attributes
+import attr
 
 from construct import Container
 
 from tls import _constructs
 
 
-@attributes(['major', 'minor'])
+@attr.s
 class ProtocolVersion(object):
     """
     An object representing a ProtocolVersion struct.
     """
+    major = attr.ib()
+    minor = attr.ib()
 
 
-@attributes(['type', 'version', 'fragment'])
+@attr.s
 class TLSPlaintext(object):
     """
     An object representing a TLSPlaintext struct.
     """
+    type = attr.ib()
+    version = attr.ib()
+    fragment = attr.ib()
+
     def as_bytes(self):
         return _constructs.TLSPlaintext.build(
             Container(
@@ -55,11 +61,15 @@ class TLSPlaintext(object):
         )
 
 
-@attributes(['type', 'version', 'fragment'])
+@attr.s
 class TLSCompressed(object):
     """
     An object representing a TLSCompressed struct.
     """
+    type = attr.ib()
+    version = attr.ib()
+    fragment = attr.ib()
+
     @classmethod
     def from_bytes(cls, bytes):
         """
@@ -79,11 +89,15 @@ class TLSCompressed(object):
         )
 
 
-@attributes(['type', 'version', 'fragment'])
+@attr.s
 class TLSCiphertext(object):
     """
     An object representing a TLSCiphertext struct.
     """
+    type = attr.ib()
+    version = attr.ib()
+    fragment = attr.ib()
+
     @classmethod
     def from_bytes(cls, bytes):
         """

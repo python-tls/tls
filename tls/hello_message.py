@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from enum import Enum
 
-from characteristic import attributes
+import attr
 
 from construct import Container
 
@@ -15,36 +15,49 @@ from six import BytesIO
 from tls import _constructs
 
 
-@attributes(['major', 'minor'])
+@attr.s
 class ProtocolVersion(object):
     """
     An object representing a ProtocolVersion struct.
     """
+    major = attr.ib()
+    minor = attr.ib()
 
 
-@attributes(['gmt_unix_time', 'random_bytes'])
+@attr.s
 class Random(object):
     """
     An object representing a Random struct.
     """
+    gmt_unix_time = attr.ib()
+    random_bytes = attr.ib()
 
 
-@attributes(['type', 'data'])
+@attr.s
 class Extension(object):
     """
     An object representing an Extension struct.
     """
+    type = attr.ib()
+    data = attr.ib()
+
     def as_bytes(self):
         return _constructs.Extension.build(Container(
             type=self.type.value, length=len(self.data), data=self.data))
 
 
-@attributes(['client_version', 'random', 'session_id', 'cipher_suites',
-             'compression_methods', 'extensions'])
+@attr.s
 class ClientHello(object):
     """
     An object representing a ClientHello message.
     """
+    client_version = attr.ib()
+    random = attr.ib()
+    session_id = attr.ib()
+    cipher_suites = attr.ib()
+    compression_methods = attr.ib()
+    extensions = attr.ib()
+
     def as_bytes(self):
         return _constructs.ClientHello.build(
             Container(
@@ -111,12 +124,18 @@ class ExtensionType(Enum):
     # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
 
 
-@attributes(['server_version', 'random', 'session_id', 'cipher_suite',
-             'compression_method', 'extensions'])
+@attr.s
 class ServerHello(object):
     """
     An object representing a ServerHello message.
     """
+    server_version = attr.ib()
+    random = attr.ib()
+    session_id = attr.ib()
+    cipher_suite = attr.ib()
+    compression_method = attr.ib()
+    extensions = attr.ib()
+
     def as_bytes(self):
         return _constructs.ServerHello.build(
             Container(
