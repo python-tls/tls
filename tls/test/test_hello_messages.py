@@ -4,6 +4,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+from construct.adapters import ValidationError
+
+import pytest
+
 from tls.ciphersuites import CipherSuites
 
 from tls.hello_message import (
@@ -47,6 +51,38 @@ class TestClientHello(object):
         b'abcd'  # extensions.extensions.extension_data
     )
 
+    compression_methods_too_short_packet = (
+        b'\x03\x00'  # client_version
+        b'\x01\x02\x03\x04'  # random.gmt_unix_time
+        b'0123456789012345678901234567'  # random.random_bytes
+        b'\x00'  # session_id.length
+        b''  # session_id.session_id
+        b'\x00\x02'  # cipher_suites length
+        b'\x00\x6B'  # cipher_suites
+        b'\x00'  # compression_methods length
+        b''  # compression_methods
+        b'\x00\x08'  # extensions length
+        b'\x00\x0D'  # extensions.extensions.extension_type
+        b'\x00\x04'  # extensions.extensions.extensions_data length
+        b'abcd'  # extensions.extensions.extension_data
+    )
+
+    cipher_suites_too_short_packet = (
+        b'\x03\x00'  # client_version
+        b'\x01\x02\x03\x04'  # random.gmt_unix_time
+        b'0123456789012345678901234567'  # random.random_bytes
+        b'\x00'  # session_id.length
+        b''  # session_id.session_id
+        b'\x00\x00'  # cipher_suites length
+        b''  # cipher_suites
+        b'\x01'  # compression_methods length
+        b'\x00'  # compression_methods
+        b'\x00\x00'  # extensions length
+        b''  # extensions.extensions.extension_type
+        b''  # extensions.extensions.extensions_data length
+        b''  # extensions.extensions.extension_data
+    )
+
     def test_resumption_no_extensions(self):
         """
         :func:`parse_client_hello` returns an instance of
@@ -85,6 +121,46 @@ class TestClientHello(object):
         assert len(record.extensions) == 1
         assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
         assert record.extensions[0].data == b'abcd'
+
+    def test_parse_client_hello_compression_methods_too_short(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` fails to parse a
+        packet whose ``compression_methods`` is too short.
+        """
+        with pytest.raises(ValidationError) as exc_info:
+            ClientHello.from_bytes(self.compression_methods_too_short_packet)
+        assert exc_info.value.args == ('invalid object', 0)
+
+    def test_as_bytes_client_hello_compression_methosds_too_short(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` fails to construct a
+        packet whose ``compression_methods`` would be too short.
+        """
+        record = ClientHello.from_bytes(self.no_extensions_packet)
+        record.compression_methods = []
+        with pytest.raises(ValidationError) as exc_info:
+            record.as_bytes()
+        assert exc_info.value.args == ('invalid object', 0)
+
+    def test_parse_client_hello_cipher_suites(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` fails to parse a
+        packet whose ``cipher_suites`` is too short.
+        """
+        with pytest.raises(ValidationError) as exc_info:
+            ClientHello.from_bytes(self.cipher_suites_too_short_packet)
+        assert exc_info.value.args == ('invalid object', 0)
+
+    def test_as_bytes_client_hello_cipher_suites(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` fails to construct a
+        packet whose ``cipher_suites`` would be too short.
+        """
+        record = ClientHello.from_bytes(self.no_extensions_packet)
+        record.cipher_suites = []
+        with pytest.raises(ValidationError) as exc_info:
+            record.as_bytes()
+        assert exc_info.value.args == ('invalid object', 0)
 
 
 class TestServerHello(object):

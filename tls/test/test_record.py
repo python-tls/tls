@@ -4,12 +4,14 @@
 
 from __future__ import absolute_import, division, print_function
 
+from construct.adapters import ValidationError
+
 from construct.core import FieldError
 
 import pytest
 
 from tls.record import (
-    ContentType, TLSCiphertext, TLSCompressed, TLSPlaintext
+    ContentType, ProtocolVersion, TLSCiphertext, TLSCompressed, TLSPlaintext
 )
 
 
@@ -81,6 +83,22 @@ class TestTLSPlaintextParsing(object):
             TLSPlaintext.from_bytes(packet)
         assert str(exc_info.value) == "expected 10, found 2"
 
+    def test_parse_fragment_too_long(self):
+        """
+        :py:func:`tls.record.TLSPlaintext` fails to parse a packet
+        containing a longer-than-allowed fragment.
+        """
+        packet = (
+            b'\x16'  # type
+            b'\x03'  # major version
+            b'\x03'  # minor version
+            b'\xff\xff' +    # big-endian length
+            (b'a' * 0xFFFF)  # fragment
+        )
+        with pytest.raises(ValidationError) as exc_info:
+            TLSPlaintext.from_bytes(packet)
+        assert exc_info.value.args == ('invalid object', 0xFFFF)
+
     def test_as_bytes(self):
         """
         Construct a TLSPlaintext object as bytes.
@@ -94,6 +112,18 @@ class TestTLSPlaintextParsing(object):
         )
         record = TLSPlaintext.from_bytes(packet)
         assert record.as_bytes() == packet
+
+    def test_as_bytes_fragment_too_long(self):
+        """
+        :py:func:`tls.record.TLSPlaintext` fails to construct a packet
+        with a longer-than-allowed fragment.
+        """
+        plaintext = TLSPlaintext(type=ContentType.HANDSHAKE,
+                                 version=ProtocolVersion(major=3, minor=3),
+                                 fragment=b'a' * 0xFFFF)
+        with pytest.raises(ValidationError) as exc_info:
+            plaintext.as_bytes()
+        assert exc_info.value.args == ('invalid object', 0xFFFF)
 
 
 class TestTLSCompressedParsing(object):
@@ -163,6 +193,22 @@ class TestTLSCompressedParsing(object):
             TLSCompressed.from_bytes(packet)
         assert str(exc_info.value) == "expected 10, found 2"
 
+    def test_fragment_too_long(self):
+        """
+        :py:func:`tls.record.TLSCompressed` rejects a packet
+        containing a longer-than-allowed fragment.
+        """
+        packet = (
+            b'\x16'  # type
+            b'\x03'  # major version
+            b'\x03'  # minor version
+            b'\xff\xff' +    # big-endian length
+            (b'a' * 0xFFFF)  # fragment
+        )
+        with pytest.raises(ValidationError) as exc_info:
+            TLSCompressed.from_bytes(packet)
+        assert exc_info.value.args == ('invalid object', 0xFFFF)
+
 
 class TestTLSCiphertextParser(object):
     """
@@ -186,3 +232,19 @@ class TestTLSCiphertextParser(object):
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.fragment == b'0123456789'
+
+    def test_fragment_too_long(self):
+        """
+        :py:func:`TLSCiphertext` rejects a packet containing a
+        longer-than-allowed fragment.
+        """
+        packet = (
+            b'\x16'  # type
+            b'\x03'  # major version
+            b'\x03'  # minor version
+            b'\xff\xff' +    # big-endian length
+            (b'a' * 0xFFFF)  # fragment
+        )
+        with pytest.raises(ValidationError) as exc_info:
+            TLSCiphertext.from_bytes(packet)
+        assert exc_info.value.args == ('invalid object', 0xFFFF)

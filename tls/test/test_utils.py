@@ -7,13 +7,15 @@ from __future__ import absolute_import, division, print_function
 import enum
 
 from construct import Struct, UBInt16, UBInt8
-from construct.adapters import MappingError
+from construct.adapters import MappingError, ValidationError, Validator
 from construct.core import AdaptationError, Construct, Container
 
 import pytest
 
 from tls.utils import (BytesAdapter, EnumClass, EnumSwitch,
-                       PrefixedBytes, TLSPrefixedArray, UBInt24, _UBInt24)
+                       PrefixedBytes, SizeAtLeast, SizeAtMost,
+                       SizeWithin, TLSPrefixedArray, UBInt24,
+                       _UBInt24)
 
 
 @pytest.mark.parametrize("byte,number", [
@@ -226,6 +228,83 @@ class TestTLSPrefixedArray(object):
         assert tls_array.parse(unparsed) == ints
 
 
+class Equals5(Validator):
+    """
+    A test fixture :py:class:`construct.adapters.Validator` subclass
+    that ensures a numeric field equals 5.
+    """
+
+    def _validate(self, obj, context):
+        return obj == 5
+
+
+class TestTLSPrefixedArrayWithLengthValidator(object):
+    """
+    Tests for :py:class:`tls.utils.TLSPrefixedArray` with a
+    ``length_validator``.
+    """
+
+    @pytest.fixture
+    def TLSUBInt8Array(self):  # noqa
+        """
+        A :py:class:`tls.utils.TLSPrefixedArray` specialized on
+        :py:func:`construct.macros.UBInt8`
+        """
+        return TLSPrefixedArray(UBInt8("data"))
+
+    @pytest.fixture
+    def TLSUBInt8Length5Array(self):  # noqa
+        """
+        Like
+        :py:meth:`TLSPrefixedArrayWithLengthValidator.TLSUBInt8Length5Array`,
+        but only accepts arrays of length 5.
+        """
+        return TLSPrefixedArray(UBInt8("data"),
+                                length_validator=Equals5)
+
+    @pytest.mark.parametrize('invalid', [
+        [1, 2, 3, 4],  # noqa
+        [1, 2, 3, 4, 5, 6],
+    ])
+    def test_build_invalid(self, TLSUBInt8Length5Array, invalid):
+        """
+        :py:class:`tls.utils.TLSPrefixedArray` raises a
+        :py:exc:`construct.adapters.ValidationError` when encoding a
+        list with an invalid length.
+        """
+        with pytest.raises(ValidationError):
+            TLSUBInt8Length5Array.build(invalid)
+
+    @pytest.mark.parametrize('invalid', [
+        b'\x00\x04' + b'\x01\x02\x03\x04',  # noqa
+        b'\x00\x06' + b'\x01\x02\x03\x04\x05\x06',
+    ])
+    def test_parse_invalid(self, TLSUBInt8Length5Array, invalid):
+        """
+        :py:class:`tls.utils.TLSPrefixedArray` raises a
+        :py:exc:`construct.adapters.ValidationError` when decoding an
+        array with an invalid length.
+        """
+        with pytest.raises(ValidationError):
+            TLSUBInt8Length5Array.parse(invalid)
+
+    def test_parse_valid(self, TLSUBInt8Length5Array, TLSUBInt8Array):  # noqa
+        """
+        :py:class:`tls.utils.TLSPrefixedArray` decodes an array that
+        passes validation.
+        """
+        valid = b'\x00\x05' + b'\x01\x02\x03\x04\x05'
+        assert TLSUBInt8Array.parse(valid) == TLSUBInt8Array.parse(valid)
+
+    def test_build_valid(self, TLSUBInt8Length5Array, TLSUBInt8Array):   # noqa
+        """
+        :py:class:`tls.utils.TLSPrefixedArray` encodes an array that
+        passes validation.
+        """
+        valid = [1, 2, 3, 4, 5]
+        assert TLSUBInt8Array.build(valid) == TLSUBInt8Array.build(valid)
+
+
 class IntegerEnum(enum.Enum):
     """
     An enum of :py:class:`int` instances.  Used as a test fixture.
@@ -338,3 +417,59 @@ class TestEnumSwitch(object):
         container = Container(type=type_, value=value)
         unparsed = UBInt8EnumMappedStruct.build(container)
         assert UBInt8EnumMappedStruct.parse(unparsed) == container
+
+
+@pytest.mark.parametrize('min_size,num,acceptable', [
+    (0, 0, True),
+    (1, 0, False),
+    (1, 1, True),
+    (1, 2, True),
+])
+def test_size_at_least_validate(min_size, num, acceptable):
+    """
+    :py:meth:`SizeAtLeast._validate` enforces its minimum size
+    inclusively when encoding numbers.
+    """
+    bounded = SizeAtLeast(Construct(name="test"), min_size=min_size)
+    if acceptable:
+        assert bounded._validate(num, context=object())
+    else:
+        assert not bounded._validate(num, context=object())
+
+
+@pytest.mark.parametrize('max_size,num,acceptable', [
+    (0, 0, True),
+    (1, 0, True),
+    (1, 1, True),
+    (1, 2, False),
+])
+def test_size_at_most_validate(max_size, num, acceptable):
+    """
+    :py:meth:`SizeAtMost._validate` enforces its maximum size
+    inclusively when encoding numbers.
+    """
+    bounded = SizeAtMost(Construct(name="test"), max_size=max_size)
+    if acceptable:
+        assert bounded._validate(num, context=object())
+    else:
+        assert not bounded._validate(num, context=object())
+
+
+@pytest.mark.parametrize('min_size,max_size,num,acceptable', [
+    (0, 0, 0, True),
+    (0, 2, 0, True),
+    (1, 2, 1, True),
+    (1, 2, 2, True),
+    (1, 2, 3, False)
+])
+def test_size_within_validate(min_size, max_size, num, acceptable):
+    """
+    :py:meth:`SizeWithin._validate` enforces its maximum size
+    inclusively when encoding numbers.
+    """
+    bounded = SizeWithin(Construct(name="test"),
+                         min_size=min_size, max_size=max_size)
+    if acceptable:
+        assert bounded._validate(num, context=object())
+    else:
+        assert not bounded._validate(num, context=object())

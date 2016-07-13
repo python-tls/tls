@@ -4,10 +4,13 @@
 
 from __future__ import absolute_import, division, print_function
 
+from functools import partial
+
 from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 
 from tls.ciphersuites import CipherSuites
-from tls.utils import EnumClass, PrefixedBytes, TLSPrefixedArray, UBInt24
+from tls.utils import (EnumClass, PrefixedBytes, SizeAtLeast,
+                       SizeAtMost, SizeWithin, TLSPrefixedArray, UBInt24)
 
 
 ProtocolVersion = Struct(
@@ -20,24 +23,27 @@ TLSPlaintext = Struct(
     "TLSPlaintext",
     UBInt8("type"),
     ProtocolVersion,
-    # TODO: Reject packets with length > 2 ** 14
-    PrefixedBytes("fragment", UBInt16("length")),
+    PrefixedBytes("fragment",
+                  SizeAtMost(UBInt16("length"),
+                             max_size=2 ** 14)),
 )
 
 TLSCompressed = Struct(
     "TLSCompressed",
     UBInt8("type"),
     ProtocolVersion,
-    # TODO: Reject packets with length > 2 ** 14 + 1024
-    PrefixedBytes("fragment", UBInt16("length")),
+    PrefixedBytes("fragment",
+                  SizeAtMost(UBInt16("length"),
+                             max_size=2 ** 14 + 1024)),
 )
 
 TLSCiphertext = Struct(
     "TLSCiphertext",
     UBInt8("type"),
     ProtocolVersion,
-    # TODO: Reject packets with length > 2 ** 14 + 2048
-    PrefixedBytes("fragment", UBInt16("length")),
+    PrefixedBytes("fragment",
+                  SizeAtMost(UBInt16("length"),
+                             max_size=2 ** 14 + 2048)),
 )
 
 Random = Struct(
@@ -54,8 +60,8 @@ SessionID = Struct(
 
 CompressionMethods = Struct(
     "compression_methods",
-    UBInt8("length"),  # TODO: Reject packets of length 0
-    Array(lambda ctx: ctx.length, UBInt8("compression_methods")),
+    SizeAtLeast(UBInt8("length"), min_size=1),
+    Array(lambda ctx: ctx.length, UBInt8("compression_methods"))
 )
 
 Extension = Struct(
@@ -69,8 +75,9 @@ ClientHello = Struct(
     ProtocolVersion,
     Random,
     SessionID,
-    # TODO: reject hellos with cipher_suites of length 0
-    TLSPrefixedArray(EnumClass(UBInt8("cipher_suites"), CipherSuites)),
+    TLSPrefixedArray(EnumClass(UBInt8("cipher_suites"),
+                               CipherSuites),
+                     length_validator=partial(SizeAtLeast, min_size=1)),
     CompressionMethods,
     UBInt16("extensions_length"),
     Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
@@ -89,7 +96,7 @@ ServerHello = Struct(
 
 ClientCertificateType = Struct(
     "certificate_types",
-    UBInt8("length"),  # TODO: Reject packets of length 0
+    SizeAtLeast(UBInt8("length"), min_size=1),
     Array(lambda ctx: ctx.length, UBInt8("certificate_types")),
 )
 
@@ -101,8 +108,8 @@ SignatureAndHashAlgorithm = Struct(
 
 SupportedSignatureAlgorithms = Struct(
     "supported_signature_algorithms",
-    UBInt16("supported_signature_algorithms_length"),
-    # TODO: Reject packets of length 0
+    SizeAtLeast(UBInt16("supported_signature_algorithms_length"),
+                min_size=1),
     Array(
         lambda ctx: ctx.supported_signature_algorithms_length / 2,
         SignatureAndHashAlgorithm,
@@ -137,20 +144,22 @@ PreMasterSecret = Struct(
 
 ASN1Cert = Struct(
     "ASN1Cert",
-    UBInt32("length"),   # TODO: Reject packets with length not in 1..2^24-1
+    SizeWithin(UBInt32("length"),
+               min_size=1, max_size=2 ** 24 - 1),
     Bytes("asn1_cert", lambda ctx: ctx.length),
 )
 
 Certificate = Struct(
-    "Certificate",  # TODO: Reject packets with length > 2 ** 24 - 1
-    UBInt32("certificates_length"),
+    "Certificate",
+    SizeWithin(UBInt32("certificates_length"),
+               min_size=1, max_size=2 ** 24 - 1),
     Bytes("certificates_bytes", lambda ctx: ctx.certificates_length),
 )
 
 Handshake = Struct(
     "Handshake",
     UBInt8("msg_type"),
-    UBInt24("length"),  # TODO: Reject packets with length > 2 ** 24
+    UBInt24("length"),
     Bytes("body", lambda ctx: ctx.length),
 )
 

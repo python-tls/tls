@@ -71,7 +71,7 @@ def PrefixedBytes(name, length_field=construct.UBInt8("length")):  # noqa
     )
 
 
-def TLSPrefixedArray(subconn, length_name="length"):  # noqa
+def TLSPrefixedArray(subconn, length_name="length", length_validator=None):  # noqa
     """
     The `TLS vector type`_.  It specializes on another
     :py:class:`construct.Construct` and then encodes or decodes an
@@ -79,19 +79,29 @@ def TLSPrefixedArray(subconn, length_name="length"):  # noqa
     reading a leading 16 bit length.
 
     :param subconn: The construct this array contains.
-    :type subconn: `construct.Construct`
+    :type subconn: ``construct.Construct``
 
-    :param length_field: (optional) The attribute name under which the
+    :param length_name: (optional) The attribute name under which the
         :class:`construct.macros.UBInt16` representing this array's
         length will be accessible.  You do not need to provide this
         when encoding a python sequence!
-    :type length_field: :py:class:`str`
+    :type length_name: :py:class:`str`
 
-    ..  _TLS vector type: https://tools.ietf.org/html/rfc5246#section-4.3
+    :param length_validator: (optional) A callable that validates the
+        array's length construct.
+    :type length_validator: a callable that accepts the length
+        construct of the array as its only argument and returns a
+        :py:class:`construct.adapters.Validator`
+
+     ..  _TLS vector type:
+        https://tools.ietf.org/html/rfc5246#section-4.3
     """
-    return construct.PrefixedArray(
-        subconn,
-        length_field=construct.UBInt16(length_name))
+    length_field = construct.UBInt16(length_name)
+
+    if length_validator is not None:
+        length_field = length_validator(length_field)
+
+    return construct.PrefixedArray(subconn, length_field=length_field)
 
 
 def EnumClass(type_field, type_enum):  # noqa
@@ -163,3 +173,93 @@ def EnumSwitch(type_field, type_enum, value_field, value_choices):  # noqa
             construct.Switch(value_field,
                              operator.attrgetter(type_field.name),
                              value_choices))
+
+
+class SizeAtLeast(construct.Validator):
+    """
+    A :py:class:`construct.adapter.Validator` that validates a
+    sequence size is greater than or equal to some minimum.
+
+    >>> from construct import UBInt8
+    >>> from tls.utils import SizeAtLeast, PrefixedBytes
+    >>> PrefixedBytes(None, SizeAtLeast(UBInt8("length"),
+    ...                     min_size=2)).parse(b'\x01a')
+    Traceback (most recent call last):
+        ...
+    construct.core.ValidationError: ('invalid object', b'a')
+
+    :param subcon: the construct to validate.
+    :type subcon: :py:class:`construct.core.Construct`
+
+    :param min_size: the (inclusive) minimum allowable size for the
+        validated sequence.
+    :type min_size: :py:class:`int`
+    """
+    def __init__(self, subconn, min_size):
+        super(SizeAtLeast, self).__init__(subconn)
+        self.min_size = min_size
+
+    def _validate(self, obj, context):
+        return self.min_size <= obj
+
+
+class SizeAtMost(construct.Validator):
+    """
+    A :py:class:`construct.adapter.Validator` that validates a
+    sequence size is less than or equal to some maximum.
+
+    >>> from tls.utils import SizeAtMost, PrefixedBytes
+    >>> PrefixedBytes(None, SizeAtMost(UBInt8("length"),
+    ...                     max_size=1)).parse(b'\x02aa')
+    Traceback (most recent call last):
+        ...
+    construct.core.ValidationError: ('invalid object', b'\x02aa')
+
+    :param subcon: the construct to validate.
+    :type subcon: :py:class:`construct.core.Construct`
+
+    :param max_size: the (inclusive) maximum allowable size for the
+        validated sequence.
+    :type max_size: :py:class:`int`
+    """
+
+    def __init__(self, subconn, max_size):
+        super(SizeAtMost, self).__init__(subconn)
+        self.max_size = max_size
+
+    def _validate(self, obj, context):
+        return obj <= self.max_size
+
+
+class SizeWithin(construct.Validator):
+    """
+    A :py:class:`construct.adapter.Validator` that validates a
+    sequence's size is within some bounds.  The bounds are
+    inclusive.
+
+    >>> from tls.utils import SizeWithin, PrefixedBytes
+    >>> PrefixedBytes(None, SizeWithin(UBInt8("length"),
+    ...                     min_size=2, max_size=2)).parse(b'\x01a')
+    Traceback (most recent call last):
+        ...
+    construct.core.ValidationError: ('invalid object', b'\x01a')
+
+    :param subcon: the construct to validate.
+    :type subcon: :py:class:`construct.core.Construct`
+
+    :param min_size: the (inclusive) minimum allowable size for the
+        validated sequence.
+    :type min_size: :py:class:`int`
+
+    :param max_size: the (inclusive) maximum allowable size for the
+        validated sequence.
+    :type max_size: :py:class:`int`
+    """
+
+    def __init__(self, subconn, min_size, max_size):
+        super(SizeWithin, self).__init__(subconn)
+        self.min_size = min_size
+        self.max_size = max_size
+
+    def _validate(self, obj, context):
+        return self.min_size <= obj <= self.max_size
