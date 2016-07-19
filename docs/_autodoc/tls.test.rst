@@ -18,10 +18,10 @@ tls.test.test_ciphersuites module
     :members:
     :show-inheritance:
 
-tls.test.test_hello_messages module
+tls.test.test_hello_message module
 -----------------------------------
 
-.. automodule:: tls.test.test_hello_messages
+.. automodule:: tls.test.test_hello_message
     :members:
     :show-inheritance:
 
