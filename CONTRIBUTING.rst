@@ -55,7 +55,7 @@ Reviewing Guidelines
 ------------------------
 
 * Make sure the API docs are updated with the changes. If they are not, request
-  the contributor run `sphinx-apidoc` to update them.
+  the contributor run ``sphinx-apidoc`` to update them.
 * Once you are satisfied with the changes and wish to merge the "Pull Request"
   using the Github Web UI, please select the "Squash and Merge" option and
   verify that the commit message is clear and descriptive of the context behind
