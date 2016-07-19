@@ -27,6 +27,10 @@ Contributing guidelines
 * Ensure your code is tested and documented. Patches without 100% test coverage
   or documentation will not be accepted.
 * Write `good commit messages`_.
+* Once you are ready with your changes and before you submit it for review to
+  make sure the API docs are updated with your changes, please run::
+
+    sphinx-apidoc -f -o docs/_autodoc tls/ --private
 
 Merge requirements
 ------------------
@@ -46,6 +50,17 @@ for committers:
   backwards incompatible release of a dependency) no pull requests may be
   merged until this is rectified.
 * All merged patches must have 100% test coverage.
+
+Reviewing Guidelines
+------------------------
+
+* Make sure the API docs are updated with the changes. If they are not, request
+  the contributor run `sphinx-apidoc` to update them.
+* Once you are satisfied with the changes and wish to merge the "Pull Request"
+  using the Github Web UI, please select the "Squash and Merge" option and
+  verify that the commit message is clear and descriptive of the context behind
+  all the changes made.
+
 
 Licensing
 ---------
