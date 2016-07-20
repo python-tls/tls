@@ -8,9 +8,11 @@ from functools import partial
 
 from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 
+from tls._common._constructs import (EnumClass, PrefixedBytes, SizeAtLeast,
+                                     SizeAtMost, SizeWithin, TLSPrefixedArray,
+                                     UBInt24)
+
 from tls.ciphersuites import CipherSuites
-from tls.utils import (EnumClass, PrefixedBytes, SizeAtLeast,
-                       SizeAtMost, SizeWithin, TLSPrefixedArray, UBInt24)
 
 
 ProtocolVersion = Struct(

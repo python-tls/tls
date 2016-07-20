@@ -12,10 +12,10 @@ from construct.core import AdaptationError, Construct, Container
 
 import pytest
 
-from tls.utils import (BytesAdapter, EnumClass, EnumSwitch,
-                       PrefixedBytes, SizeAtLeast, SizeAtMost,
-                       SizeWithin, TLSPrefixedArray, UBInt24,
-                       _UBInt24)
+from tls._common._constructs import (BytesAdapter, EnumClass, EnumSwitch,
+                                     PrefixedBytes, SizeAtLeast, SizeAtMost,
+                                     SizeWithin, TLSPrefixedArray, UBInt24,
+                                     _UBInt24)
 
 
 @pytest.mark.parametrize("byte,number", [
@@ -39,14 +39,14 @@ def test_ubint24():
 
 class TestBytesAdapter(object):
     """
-    Tests for :py:class:`tls.utils.BytesAdapter`.
+    Tests for :py:class:`tls._common._constructs.BytesAdapter`.
     """
 
     @pytest.fixture
     def bytes_adapted(self):
         """
-        A :py:class:`tls.utils.BytesAdapter` that adapts a trivial
-        :py:func:`construct.Construct`.
+        A :py:class:`tls._common._constructs.BytesAdapter` that adapts a
+        trivial :py:func:`construct.Construct`.
         """
         return BytesAdapter(Construct(name=None))
 
@@ -57,7 +57,7 @@ class TestBytesAdapter(object):
     ])
     def test_encode_disallows_non_bytes(self, bytes_adapted, non_bytes):
         """
-        :py:meth:`tls.utils.BytesAdapter._encode` raises a
+        :py:meth:`tls._common._constructs.BytesAdapter._encode` raises a
         :py:exc:`construct.core.AdaptationError` when encoding
         anything that isn't :py:class:`bytes`.
         """
@@ -72,7 +72,7 @@ class TestBytesAdapter(object):
     ])
     def test_encode_allows_bytes(self, bytes_adapted, byte_string):
         """
-        :py:meth:`tls.utils.BytesAdapter._encode` encodes
+        :py:meth:`tls._common._constructs.BytesAdapter._encode` encodes
         :py:class:`bytes` without raising an exception.
         """
         assert bytes_adapted._encode(byte_string,
@@ -86,7 +86,7 @@ class TestBytesAdapter(object):
     ])
     def test_decode_passes_value_through(self, bytes_adapted, value):
         """
-        :py:meth:`tls.utils.BytesAdapter._decode` decodes
+        :py:meth:`tls._common._constructs.BytesAdapter._decode` decodes
         :py:class:`bytes` as :py:class:`bytes`.
         """
         assert bytes_adapted._decode(value, context=object()) is value
@@ -99,37 +99,37 @@ class TestBytesAdapter(object):
 ])
 class TestPrefixedBytesWithDefaultLength(object):
     """
-    Tests for :py:func:`tls.utils.PrefixedBytes` with the default
+    Tests for :py:func:`tls._common._constructs.PrefixedBytes` with the default
     :py:func:`construct.macros.UBInt8` ``length_field`` construct.
     """
 
     @pytest.fixture
     def prefixed_bytes(self):
         """
-        A trivial :py:func:`tls.utils.PrefixedBytes` construct with
-        the default :py:func:`construct.macros.UBInt8` length field.
+        A trivial :py:func:`tls._common._constructs.PrefixedBytes` construct
+        with the default :py:func:`construct.macros.UBInt8` length field.
         """
         return PrefixedBytes("PrefixedBytes")
 
     def test_build(self, prefixed_bytes, bytestring, encoded):
         """
-        :py:meth:`tls.utils.PrefixedBytes` encodes
+        :py:meth:`tls._common._constructs.PrefixedBytes` encodes
         :py:class:`bytes` as a length-prefixed byte sequence.
         """
         assert prefixed_bytes.build(bytestring) == encoded
 
     def test_parse(self, prefixed_bytes, bytestring, encoded):
         """
-        :py:meth:`tls.utils.PrefixedBytes` decodes a
+        :py:meth:`tls._common._constructs.PrefixedBytes` decodes a
         length-prefixed byte sequence as :py:class:`bytes`.
         """
         assert prefixed_bytes.parse(encoded) == bytestring
 
     def test_round_trip(self, prefixed_bytes, bytestring, encoded):
         """
-        :py:meth:`tls.utils.PrefixedBytes` decodes a
+        :py:meth:`tls._common._constructs.PrefixedBytes` decodes a
         length-prefixed binary sequence encoded by
-        :py:meth:`tls.utils.PrefixedBytes` and vice versa.
+        :py:meth:`tls._common._constructs.PrefixedBytes` and vice versa.
         """
         parsed = prefixed_bytes.parse(encoded)
         assert prefixed_bytes.build(parsed) == encoded
@@ -143,13 +143,13 @@ class TestPrefixedBytesWithDefaultLength(object):
 ])
 class TestPrefixedBytesWithOverriddenLength(object):
     """
-    Tests for :py:func:`tls.utils.PrefixedBytes` with a user-supplied
-    ``length_field`` construct.
+    Tests for :py:func:`tls._common._constructs.PrefixedBytes` with a
+    user-supplied ``length_field`` construct.
     """
 
     def test_build(self, bytestring, encoded, length_field):
         """
-        :py:meth:`tls.utils.PrefixedBytes` uses the supplied
+        :py:meth:`tls._common._constructs.PrefixedBytes` uses the supplied
         ``length_field`` to encode :class:`bytes` as a length-prefix
         binary sequence.
         """
@@ -158,8 +158,8 @@ class TestPrefixedBytesWithOverriddenLength(object):
 
     def test_parse(self, bytestring, encoded, length_field):
         """
-        :py:meth:`tls.utils.PrefixedBytes` decodes a length-prefixed
-        binary sequence into :py:class:`bytes` according to the
+        :py:meth:`tls._common._constructs.PrefixedBytes` decodes a
+        length-prefixed binary sequence into :py:class:`bytes` according to the
         supplied ``length_field``.
         """
         prefixed_bytes = PrefixedBytes("name", length_field=length_field)
@@ -167,9 +167,10 @@ class TestPrefixedBytesWithOverriddenLength(object):
 
     def test_round_trip(self, bytestring, encoded, length_field):
         """
-        :py:meth:`tls.utils.PrefixedBytes` decodes a length-prefixed
-        binary sequence encoded by :py:meth:`tls.utils.PrefixedBytes`
-        when the two share a ``length_field`` and vice versa.
+        :py:meth:`tls._common._constructs.PrefixedBytes` decodes a
+        length-prefixed binary sequence encoded by
+        :py:meth:`tls._common._constructs.PrefixedBytes` when the two share a
+        ``length_field`` and vice versa.
         """
         prefixed_bytes = PrefixedBytes("name", length_field)
         parsed = prefixed_bytes.parse(encoded)
@@ -185,41 +186,40 @@ class TestPrefixedBytesWithOverriddenLength(object):
      ([1] * 65535, b'\xFF\xFF' + b'\x01' * 65535)])
 class TestTLSPrefixedArray(object):
     """
-    Tests for :py:func:`tls.utils.TLSPrefixedArray`.
+    Tests for :py:func:`tls._common._constructs.TLSPrefixedArray`.
     """
 
     @pytest.fixture
     def tls_array(self):
         """
-        A :py:func:`tls.utils.TLSPrefixedArray` of
+        A :py:func:`tls._common._constructs.TLSPrefixedArray` of
         :py:func:`construct.macros.UBInt8`.
         """
         return TLSPrefixedArray(UBInt8("digit"))
 
     def test_build(self, tls_array, ints, uint8_encoded):
         """
-        A :py:meth:`tls.utils.TLSPrefixedArray` specialized on a given
-        :py:func:`construct.Construct` encodes a sequence of objects
-        as a 16-bit length followed by each object as encoded by that
-        construct.
+        A :py:meth:`tls._common._constructs.TLSPrefixedArray` specialized on a
+        given :py:func:`construct.Construct` encodes a sequence of objects as a
+        16-bit length followed by each object as encoded by that construct.
         """
         assert tls_array.build(ints) == uint8_encoded
 
     def test_parse(self, tls_array, ints, uint8_encoded):
         """
-        A :py:meth:`tls.utils.TLSPrefixedArray` specialized on a given
-        :py:func:`construct.Construct` decodes a binary sequence,
-        prefixed by its 16-bit length, as a :py:class:`list` of
-        objects decoded by that construct.
+        A :py:meth:`tls._common._constructs.TLSPrefixedArray` specialized on a
+        given :py:func:`construct.Construct` decodes a binary sequence,
+        prefixed by its 16-bit length, as a :py:class:`list` of objects decoded
+        by that construct.
         """
         assert tls_array.parse(uint8_encoded) == ints
 
     def test_round_trip(self, tls_array, ints, uint8_encoded):
         """
-        A :py:meth:`tls.utils.TLSPrefixedArray` decodes a
+        A :py:meth:`tls._common._constructs.TLSPrefixedArray` decodes a
         length-prefixed binary sequence encoded by a
-        :py:meth:`tls.utils.TLSPrefixedArray` specialized on the same
-        construct and vice versa.
+        :py:meth:`tls._common._constructs.TLSPrefixedArray` specialized on the
+        same construct and vice versa.
         """
 
         parsed = tls_array.parse(uint8_encoded)
@@ -240,14 +240,14 @@ class Equals5(Validator):
 
 class TestTLSPrefixedArrayWithLengthValidator(object):
     """
-    Tests for :py:class:`tls.utils.TLSPrefixedArray` with a
+    Tests for :py:class:`tls._common._constructs.TLSPrefixedArray` with a
     ``length_validator``.
     """
 
     @pytest.fixture
     def TLSUBInt8Array(self):  # noqa
         """
-        A :py:class:`tls.utils.TLSPrefixedArray` specialized on
+        A :py:class:`tls._common._constructs.TLSPrefixedArray` specialized on
         :py:func:`construct.macros.UBInt8`
         """
         return TLSPrefixedArray(UBInt8("data"))
@@ -268,7 +268,7 @@ class TestTLSPrefixedArrayWithLengthValidator(object):
     ])
     def test_build_invalid(self, TLSUBInt8Length5Array, invalid):
         """
-        :py:class:`tls.utils.TLSPrefixedArray` raises a
+        :py:class:`tls._common._constructs.TLSPrefixedArray` raises a
         :py:exc:`construct.adapters.ValidationError` when encoding a
         list with an invalid length.
         """
@@ -281,7 +281,7 @@ class TestTLSPrefixedArrayWithLengthValidator(object):
     ])
     def test_parse_invalid(self, TLSUBInt8Length5Array, invalid):
         """
-        :py:class:`tls.utils.TLSPrefixedArray` raises a
+        :py:class:`tls._common._constructs.TLSPrefixedArray` raises a
         :py:exc:`construct.adapters.ValidationError` when decoding an
         array with an invalid length.
         """
@@ -290,16 +290,16 @@ class TestTLSPrefixedArrayWithLengthValidator(object):
 
     def test_parse_valid(self, TLSUBInt8Length5Array, TLSUBInt8Array):  # noqa
         """
-        :py:class:`tls.utils.TLSPrefixedArray` decodes an array that
-        passes validation.
+        :py:class:`tls._common._constructs.TLSPrefixedArray` decodes an array
+        that passes validation.
         """
         valid = b'\x00\x05' + b'\x01\x02\x03\x04\x05'
         assert TLSUBInt8Array.parse(valid) == TLSUBInt8Array.parse(valid)
 
     def test_build_valid(self, TLSUBInt8Length5Array, TLSUBInt8Array):   # noqa
         """
-        :py:class:`tls.utils.TLSPrefixedArray` encodes an array that
-        passes validation.
+        :py:class:`tls._common._constructs.TLSPrefixedArray` encodes an array
+        that passes validation.
         """
         valid = [1, 2, 3, 4, 5]
         assert TLSUBInt8Array.build(valid) == TLSUBInt8Array.build(valid)
@@ -324,34 +324,34 @@ class UnicodeEnum(enum.Enum):
 
 class TestEnumClass(object):
     """
-    Tests for :py:func:`tls.utils.EnumClass`.
+    Tests for :py:func:`tls._common._constructs.EnumClass`.
     """
 
     @pytest.fixture
     def UBInt8Enum(self):  # noqa
         """
-        A :py:func:`tls.utils.EnumClass` that adapts
+        A :py:func:`tls._common._constructs.EnumClass` that adapts
         :py:class:`IntegerEnum`'s members to :py:func:`UBInt8`.
         """
         return EnumClass(UBInt8("type"), IntegerEnum)
 
     def test_build(self, UBInt8Enum):  # noqa
         """
-        :py:func:`tls.utils.EnumClass` encodes members of its enum
-        according to its construct.
+        :py:func:`tls._common._constructs.EnumClass` encodes members of its
+        enum according to its construct.
         """
         assert UBInt8Enum.build(IntegerEnum.FIRST) == b'\x01'
 
     def test_parse(self, UBInt8Enum):  # noqa
         """
-        :py:func:`tls.utils.EnumClass` decodes a binary sequence as
-        members of its enum via its construct.
+        :py:func:`tls._common._constructs.EnumClass` decodes a binary sequence
+        as members of its enum via its construct.
         """
         assert UBInt8Enum.parse(b'\x02') == IntegerEnum.SECOND
 
     def test_build_enum_has_wrong_type(self, UBInt8Enum):  # noqa
         """
-        :py:func:`tls.utils.EnumClass` raises
+        :py:func:`tls._common._constructs.EnumClass` raises
         :py:exc:`construct.adapters.MappingError` when encoding
         something that isn't a member of its enum.
         """
@@ -365,18 +365,18 @@ class TestEnumClass(object):
 ])
 class TestEnumSwitch(object):
     """
-    Tests for :py:func:`tls.utils.EnumSwitch`.
+    Tests for :py:func:`tls._common._constructs.EnumSwitch`.
     """
 
     @pytest.fixture
     def UBInt8EnumMappedStruct(self):  # noqa
         """
         A :py:class:`construct.core.Struct` containing an
-        :py:func:`tls.utils.EnumSwitch` that switches on
+        :py:func:`tls._common._constructs.EnumSwitch` that switches on
         :py:class:`IntegerEnum`.  The struct's ``value`` field varies
         depending on the value of its ``type`` and the corresponding
         enum member specified in the ``value_choices`` dictionary
-        passed to the :py:func:`tls.utils.EnumSwitch`.
+        passed to the :py:func:`tls._common._constructs.EnumSwitch`.
         """
         return Struct(
             "UBInt8EnumMappedStruct",
@@ -389,8 +389,8 @@ class TestEnumSwitch(object):
 
     def test_build(self, UBInt8EnumMappedStruct, type_, value, encoded):  # noqa
         """
-        A struct that contains :py:func:`tls.utils.EnumSwitch` encodes
-        its ``value_field`` according to the enum member specified in
+        A struct that contains :py:func:`tls._common._constructs.EnumSwitch`
+        encodes its ``value_field`` according to the enum member specified in
         its ``type_field``.
         """
         container = Container(type=type_, value=value)
@@ -398,8 +398,8 @@ class TestEnumSwitch(object):
 
     def test_parse(self, UBInt8EnumMappedStruct, type_, value, encoded):  # noqa
         """
-        A struct that contains :py:func:`tls.utils.EnumSwitch` decodes
-        its value field according to the enum member specified by its
+        A struct that contains :py:func:`tls._common._constructs.EnumSwitch`
+        decodes its value field according to the enum member specified by its
         ``type_field``.
         """
         container = UBInt8EnumMappedStruct.parse(encoded)
@@ -407,9 +407,9 @@ class TestEnumSwitch(object):
 
     def test_round_trip(self, UBInt8EnumMappedStruct, type_, value, encoded):  # noqa
         """
-        A struct that contains :py:func:`tls.utils.EnumSwitch` decodes
-        a binary sequence encoded by a struct with that same
-        :py:func:`tls.utils.EnumSwitch` and vice versa.
+        A struct that contains :py:func:`tls._common._constructs.EnumSwitch`
+        decodes a binary sequence encoded by a struct with that same
+        :py:func:`tls._common._constructs.EnumSwitch` and vice versa.
         """
         parsed = UBInt8EnumMappedStruct.parse(encoded)
         assert UBInt8EnumMappedStruct.build(parsed) == encoded

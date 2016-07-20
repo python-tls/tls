@@ -129,7 +129,7 @@ def EnumSwitch(type_field, type_enum, value_field, value_choices):  # noqa
     be spliced into another :py:func:`construct.Construct`'s
     definition:
 
-    >>> from tls.utils import EnumSwitch
+    >>> from tls._common._constructs import EnumSwitch
     >>> import construct, enum
     >>> class IntEnum(enum.Enum):
     ...     VALUE = 1
@@ -181,7 +181,7 @@ class SizeAtLeast(construct.Validator):
     sequence size is greater than or equal to some minimum.
 
     >>> from construct import UBInt8
-    >>> from tls.utils import SizeAtLeast, PrefixedBytes
+    >>> from tls._common._constructs import SizeAtLeast, PrefixedBytes
     >>> PrefixedBytes(None, SizeAtLeast(UBInt8("length"),
     ...                     min_size=2)).parse(b'\x01a')
     Traceback (most recent call last):
@@ -208,7 +208,7 @@ class SizeAtMost(construct.Validator):
     A :py:class:`construct.adapter.Validator` that validates a
     sequence size is less than or equal to some maximum.
 
-    >>> from tls.utils import SizeAtMost, PrefixedBytes
+    >>> from tls._common._constructs import SizeAtMost, PrefixedBytes
     >>> PrefixedBytes(None, SizeAtMost(UBInt8("length"),
     ...                     max_size=1)).parse(b'\x02aa')
     Traceback (most recent call last):
@@ -237,7 +237,7 @@ class SizeWithin(construct.Validator):
     sequence's size is within some bounds.  The bounds are
     inclusive.
 
-    >>> from tls.utils import SizeWithin, PrefixedBytes
+    >>> from tls._common._constructs import SizeWithin, PrefixedBytes
     >>> PrefixedBytes(None, SizeWithin(UBInt8("length"),
     ...                     min_size=2, max_size=2)).parse(b'\x01a')
     Traceback (most recent call last):

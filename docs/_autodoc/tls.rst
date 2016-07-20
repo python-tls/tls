@@ -68,14 +68,6 @@ tls.record module
     :undoc-members:
     :show-inheritance:
 
-tls.utils module
-----------------
-
-.. automodule:: tls.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

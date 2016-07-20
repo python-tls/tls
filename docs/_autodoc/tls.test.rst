@@ -44,14 +44,6 @@ tls.test.test_record module
     :undoc-members:
     :show-inheritance:
 
-tls.test.test_utils module
---------------------------
-
-.. automodule:: tls.test.test_utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------
