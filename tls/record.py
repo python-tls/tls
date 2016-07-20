@@ -4,13 +4,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-from enum import Enum
-
 import attr
 
 from construct import Container
 
 from tls import _constructs
+
+from tls._common import enums
 
 
 @attr.s
@@ -52,7 +52,7 @@ class TLSPlaintext(object):
         """
         construct = _constructs.TLSPlaintext.parse(bytes)
         return cls(
-            type=ContentType(construct.type),
+            type=enums.ContentType(construct.type),
             version=ProtocolVersion(
                 major=construct.version.major,
                 minor=construct.version.minor
@@ -80,7 +80,7 @@ class TLSCompressed(object):
         """
         construct = _constructs.TLSCompressed.parse(bytes)
         return cls(
-            type=ContentType(construct.type),
+            type=enums.ContentType(construct.type),
             version=ProtocolVersion(
                 major=construct.version.major,
                 minor=construct.version.minor
@@ -108,17 +108,10 @@ class TLSCiphertext(object):
         """
         construct = _constructs.TLSCiphertext.parse(bytes)
         return cls(
-            type=ContentType(construct.type),
+            type=enums.ContentType(construct.type),
             version=ProtocolVersion(
                 major=construct.version.major,
                 minor=construct.version.minor
             ),
             fragment=construct.fragment
         )
-
-
-class ContentType(Enum):
-    CHANGE_CIPHER_SPEC = 20
-    ALERT = 21
-    HANDSHAKE = 22
-    APPLICATION_DATA = 23

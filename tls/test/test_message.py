@@ -8,13 +8,14 @@ from construct.adapters import ValidationError
 
 import pytest
 
+from tls._common import enums
+
 from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 
-from tls.message import (
-    ASN1Cert, Certificate, CertificateRequest, ClientCertificateType, Finished,
-    Handshake, HandshakeType, HashAlgorithm, HelloRequest, PreMasterSecret,
-    ServerDHParams, ServerHelloDone, SignatureAlgorithm
-)
+from tls.message import (ASN1Cert, Certificate, CertificateRequest,
+                         Finished, Handshake, HelloRequest,
+                         PreMasterSecret, ServerDHParams,
+                         ServerHelloDone)
 
 
 class TestCertificateRequestParsing(object):
@@ -60,12 +61,14 @@ class TestCertificateRequestParsing(object):
 
     def test_parse_certificate_request(self):
         record = CertificateRequest.from_bytes(self.no_authorities_packet)
-        assert record.certificate_types == [ClientCertificateType.RSA_SIGN]
+        assert record.certificate_types == [
+            enums.ClientCertificateType.RSA_SIGN
+        ]
         assert len(record.supported_signature_algorithms) == 1
-        assert record.supported_signature_algorithms[0].hash == \
-            HashAlgorithm.MD5
-        assert record.supported_signature_algorithms[0].signature == \
-            SignatureAlgorithm.RSA
+        assert (record.supported_signature_algorithms[0].hash ==
+                enums.HashAlgorithm.MD5)
+        assert (record.supported_signature_algorithms[0].signature ==
+                enums.SignatureAlgorithm.RSA)
         assert record.certificate_authorities == b''
 
     def test_parse_certificate_request_with_authorities(self):
@@ -377,14 +380,14 @@ class TestHandshakeStructParsing(object):
     def test_parse_client_hello_in_handshake(self):
         record = Handshake.from_bytes(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.CLIENT_HELLO
+        assert record.msg_type == enums.HandshakeType.CLIENT_HELLO
         assert record.length == 51
         assert isinstance(record.body, ClientHello)
 
     def test_parse_server_hello_in_handshake(self):
         record = Handshake.from_bytes(self.server_hello_handshake_packet)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.SERVER_HELLO
+        assert record.msg_type == enums.HandshakeType.SERVER_HELLO
         assert record.length == 80
         assert isinstance(record.body, ServerHello)
 
@@ -393,42 +396,42 @@ class TestHandshakeStructParsing(object):
             self.certificate_request_handshake
         )
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.CERTIFICATE_REQUEST
+        assert record.msg_type == enums.HandshakeType.CERTIFICATE_REQUEST
         assert record.length == 8
         assert isinstance(record.body, CertificateRequest)
 
     def test_parse_certificate_in_handshake(self):
         record = Handshake.from_bytes(self.certificate_handshake_packet)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.CERTIFICATE
+        assert record.msg_type == enums.HandshakeType.CERTIFICATE
         assert record.length == 11
         assert isinstance(record.body, Certificate)
 
     def test_parse_hello_request(self):
         record = Handshake.from_bytes(self.hello_request_handshake)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.HELLO_REQUEST
+        assert record.msg_type == enums.HandshakeType.HELLO_REQUEST
         assert record.length == 0
         assert isinstance(record.body, HelloRequest)
 
     def test_server_hello_done(self):
         record = Handshake.from_bytes(self.server_hello_done_handshake)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.SERVER_HELLO_DONE
+        assert record.msg_type == enums.HandshakeType.SERVER_HELLO_DONE
         assert record.length == 0
         assert isinstance(record.body, ServerHelloDone)
 
     def test_not_implemented(self):
         record = Handshake.from_bytes(self.server_key_exchange_handshake)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.SERVER_KEY_EXCHANGE
+        assert record.msg_type == enums.HandshakeType.SERVER_KEY_EXCHANGE
         assert record.length == 0
         assert record.body is None
 
     def test_finished(self):
         record = Handshake.from_bytes(self.finished_handshake)
         assert isinstance(record, Handshake)
-        assert record.msg_type == HandshakeType.FINISHED
+        assert record.msg_type == enums.HandshakeType.FINISHED
         assert record.length == 20
         assert isinstance(record.body, Finished)
         assert record.body.verify_data == b'some-encrypted-bytes'

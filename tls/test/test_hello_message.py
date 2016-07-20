@@ -8,11 +8,11 @@ from construct.adapters import ValidationError
 
 import pytest
 
+from tls._common import enums
+
 from tls.ciphersuites import CipherSuites
 
-from tls.hello_message import (
-    ClientHello, CompressionMethod, ExtensionType, ServerHello
-)
+from tls.hello_message import ClientHello, ServerHello
 
 
 class TestClientHello(object):
@@ -119,7 +119,8 @@ class TestClientHello(object):
     def test_parse_client_hello_extensions(self):
         record = ClientHello.from_bytes(self.extensions_packet)
         assert len(record.extensions) == 1
-        assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
+        assert (record.extensions[0].type ==
+                enums.ExtensionType.SIGNATURE_ALGORITHMS)
         assert record.extensions[0].data == b'abcd'
 
     def test_parse_client_hello_compression_methods_too_short(self):
@@ -207,17 +208,18 @@ class TestServerHello(object):
         assert record.random.random_bytes == b'0123456789012345678901234567'
         assert record.session_id == b'01234567890123456789012345678901'
         assert record.cipher_suite == b'\x00\x6B'
-        assert record.compression_method == CompressionMethod.NULL
+        assert record.compression_method == enums.CompressionMethod.NULL
         assert len(record.extensions) == 0
 
     def test_parse_server_hello_extensions(self):
         """
-        :func:`parse_server_hello` returns an instance of
-        :class:`ServerHello`.
+        :func:`parse_server_hello` returns an instance of :class:`ServerHello`
+        with extensions, when the extension bytes are present in the input.
         """
         record = ServerHello.from_bytes(self.extensions_packet)
         assert len(record.extensions) == 1
-        assert record.extensions[0].type == ExtensionType.SIGNATURE_ALGORITHMS
+        assert (record.extensions[0].type ==
+                enums.ExtensionType.SIGNATURE_ALGORITHMS)
         assert record.extensions[0].data == b'abcd'
 
     def test_as_bytes_no_extensions(self):

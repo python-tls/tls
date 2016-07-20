@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from enum import Enum
-
 import attr
 
 from construct import Container
@@ -14,49 +12,9 @@ from six import BytesIO
 
 from tls import _constructs
 
-from tls.hello_message import (
-    ClientHello, ProtocolVersion, ServerHello
-)
+from tls._common import enums
 
-
-class ClientCertificateType(Enum):
-    RSA_SIGN = 1
-    DSS_SIGN = 2
-    RSA_FIXED_DH = 3
-    DSS_FIXED_DH = 4
-    RSA_EPHEMERAL_DH_RESERVED = 5
-    DSS_EPHEMERAL_DH_RESERVED = 6
-    FORTEZZA_DMS_RESERVED = 20
-
-
-class HashAlgorithm(Enum):
-    NONE = 0
-    MD5 = 1
-    SHA1 = 2
-    SHA224 = 3
-    SHA256 = 4
-    SHA384 = 5
-    SHA512 = 6
-
-
-class SignatureAlgorithm(Enum):
-    ANONYMOUS = 0
-    RSA = 1
-    DSA = 2
-    ECDSA = 3
-
-
-class HandshakeType(Enum):
-    HELLO_REQUEST = 0
-    CLIENT_HELLO = 1
-    SERVER_HELLO = 2
-    CERTIFICATE = 11
-    SERVER_KEY_EXCHANGE = 12
-    CERTIFICATE_REQUEST = 13
-    SERVER_HELLO_DONE = 14
-    CERTIFICATE_VERIFY = 15
-    CLIENT_KEY_EXCHANGE = 16
-    FINISHED = 20
+from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 
 
 class HelloRequest(object):
@@ -119,13 +77,13 @@ class CertificateRequest(object):
         construct = _constructs.CertificateRequest.parse(bytes)
         return cls(
             certificate_types=[
-                ClientCertificateType(cert_type)
+                enums.ClientCertificateType(cert_type)
                 for cert_type in construct.certificate_types.certificate_types
             ],
             supported_signature_algorithms=[
                 SignatureAndHashAlgorithm(
-                    hash=HashAlgorithm(algorithm.hash),
-                    signature=SignatureAlgorithm(algorithm.signature),
+                    hash=enums.HashAlgorithm(algorithm.hash),
+                    signature=enums.SignatureAlgorithm(algorithm.signature),
                 )
                 for algorithm in (
                     construct.supported_signature_algorithms.algorithms
@@ -272,10 +230,14 @@ class Handshake(object):
 
     def as_bytes(self):
         if self.msg_type in [
-            HandshakeType.SERVER_HELLO, HandshakeType.CLIENT_HELLO,
-            HandshakeType.CERTIFICATE, HandshakeType.CERTIFICATE_REQUEST,
-            HandshakeType.HELLO_REQUEST, HandshakeType.SERVER_HELLO_DONE,
-            HandshakeType.FINISHED
+            # TODO: Make these a frozenset constant.
+            enums.HandshakeType.SERVER_HELLO,
+            enums.HandshakeType.CLIENT_HELLO,
+            enums.HandshakeType.CERTIFICATE,
+            enums.HandshakeType.CERTIFICATE_REQUEST,
+            enums.HandshakeType.HELLO_REQUEST,
+            enums.HandshakeType.SERVER_HELLO_DONE,
+            enums.HandshakeType.FINISHED
         ]:
             _body_as_bytes = self.body.as_bytes()
         else:
@@ -298,36 +260,36 @@ class Handshake(object):
         """
         construct = _constructs.Handshake.parse(bytes)
         return cls(
-            msg_type=HandshakeType(construct.msg_type),
+            msg_type=enums.HandshakeType(construct.msg_type),
             length=construct.length,
             body=cls._get_handshake_message(
-                HandshakeType(construct.msg_type), construct.body
+                enums.HandshakeType(construct.msg_type), construct.body
             ),
         )
 
     @staticmethod
     def _get_handshake_message(msg_type, body):
         _handshake_message_parser = {
-            HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
-            HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
-            HandshakeType.CERTIFICATE: Certificate.from_bytes,
+            enums.HandshakeType.CLIENT_HELLO: ClientHello.from_bytes,
+            enums.HandshakeType.SERVER_HELLO: ServerHello.from_bytes,
+            enums.HandshakeType.CERTIFICATE: Certificate.from_bytes,
             #    12: parse_server_key_exchange,
-            HandshakeType.CERTIFICATE_REQUEST: CertificateRequest.from_bytes,
+            enums.HandshakeType.CERTIFICATE_REQUEST:
+                CertificateRequest.from_bytes,
             #    15: parse_certificate_verify,
             #    16: parse_client_key_exchange,
         }
 
         try:
-            if msg_type == HandshakeType.HELLO_REQUEST:
+            if msg_type == enums.HandshakeType.HELLO_REQUEST:
                 return HelloRequest()
-            elif msg_type == HandshakeType.SERVER_HELLO_DONE:
+            elif msg_type == enums.HandshakeType.SERVER_HELLO_DONE:
                 return ServerHelloDone()
-            elif msg_type == HandshakeType.FINISHED:
+            elif msg_type == enums.HandshakeType.FINISHED:
                 return Finished(verify_data=body)
-            elif msg_type in [HandshakeType.SERVER_KEY_EXCHANGE,
-                              HandshakeType.CERTIFICATE_VERIFY,
-                              HandshakeType.CLIENT_KEY_EXCHANGE,
-                              ]:
+            elif msg_type in [enums.HandshakeType.SERVER_KEY_EXCHANGE,
+                              enums.HandshakeType.CERTIFICATE_VERIFY,
+                              enums.HandshakeType.CLIENT_KEY_EXCHANGE]:
                 raise NotImplementedError
             else:
                 return _handshake_message_parser[msg_type](body)

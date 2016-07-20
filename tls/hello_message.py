@@ -4,8 +4,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-from enum import Enum
-
 import attr
 
 from construct import Container
@@ -13,6 +11,8 @@ from construct import Container
 from six import BytesIO
 
 from tls import _constructs
+
+from tls._common import enums
 
 
 @attr.s
@@ -99,7 +99,7 @@ class ClientHello(object):
             extension_construct = _constructs.Extension.parse_stream(
                 extensions_io)
             extensions.append(
-                Extension(type=ExtensionType(extension_construct.type),
+                Extension(type=enums.ExtensionType(extension_construct.type),
                           data=extension_construct.data))
         return ClientHello(
             client_version=ProtocolVersion(
@@ -117,11 +117,6 @@ class ClientHello(object):
             ),
             extensions=extensions,
         )
-
-
-class ExtensionType(Enum):
-    SIGNATURE_ALGORITHMS = 13
-    # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
 
 
 @attr.s
@@ -173,7 +168,7 @@ class ServerHello(object):
             extension_construct = _constructs.Extension.parse_stream(
                 extensions_io)
             extensions.append(
-                Extension(type=ExtensionType(extension_construct.type),
+                Extension(type=enums.ExtensionType(extension_construct.type),
                           data=extension_construct.data))
         return ServerHello(
             server_version=ProtocolVersion(
@@ -186,10 +181,8 @@ class ServerHello(object):
             ),
             session_id=construct.session_id.session_id,
             cipher_suite=construct.cipher_suite,
-            compression_method=CompressionMethod(construct.compression_method),
+            compression_method=enums.CompressionMethod(
+                construct.compression_method
+            ),
             extensions=extensions,
         )
-
-
-class CompressionMethod(Enum):
-    NULL = 0

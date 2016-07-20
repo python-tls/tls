@@ -10,9 +10,10 @@ from construct.core import FieldError
 
 import pytest
 
-from tls.record import (
-    ContentType, ProtocolVersion, TLSCiphertext, TLSCompressed, TLSPlaintext
-)
+from tls._common import enums
+
+from tls.record import (ProtocolVersion, TLSCiphertext, TLSCompressed,
+                        TLSPlaintext)
 
 
 class TestTLSPlaintextParsing(object):
@@ -34,14 +35,15 @@ class TestTLSPlaintextParsing(object):
             b'0123456789'  # fragment
         )
         record = TLSPlaintext.from_bytes(packet)
-        assert record.type == ContentType.HANDSHAKE
+        assert record.type == enums.ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.fragment == b'0123456789'
 
     def test_parse_tls_plaintext_wrong_type(self):
         """
-        Raise an error when the type is not one of those defined in ContentType
+        Raise an error when the type is not one of those defined in
+        :class:`enums.ContentType`.
         """
         packet = (
             b'\x1a'  # invalid type
@@ -118,7 +120,7 @@ class TestTLSPlaintextParsing(object):
         :py:func:`tls.record.TLSPlaintext` fails to construct a packet
         with a longer-than-allowed fragment.
         """
-        plaintext = TLSPlaintext(type=ContentType.HANDSHAKE,
+        plaintext = TLSPlaintext(type=enums.ContentType.HANDSHAKE,
                                  version=ProtocolVersion(major=3, minor=3),
                                  fragment=b'a' * 0xFFFF)
         with pytest.raises(ValidationError) as exc_info:
@@ -144,14 +146,15 @@ class TestTLSCompressedParsing(object):
             b'0123456789'  # fragment
         )
         record = TLSCompressed.from_bytes(packet)
-        assert record.type == ContentType.HANDSHAKE
+        assert record.type == enums.ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.fragment == b'0123456789'
 
     def test_parse_tls_compressed_wrong_type(self):
         """
-        Raise an error when the type is not one of those defined in ContentType
+        Raise an error when the type is not one of those defined in
+        :class:`enums.ContentType`.
         """
         packet = (
             b'\x1a'  # invalid type
@@ -228,7 +231,7 @@ class TestTLSCiphertextParser(object):
             b'0123456789'  # fragment
         )
         record = TLSCiphertext.from_bytes(packet)
-        assert record.type == ContentType.HANDSHAKE
+        assert record.type == enums.ContentType.HANDSHAKE
         assert record.version.major == 3
         assert record.version.minor == 3
         assert record.fragment == b'0123456789'

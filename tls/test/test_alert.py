@@ -4,7 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-from tls.alert_message import Alert, AlertDescription, AlertLevel
+from tls._common import enums
+
+from tls.alert_message import Alert
 
 
 class TestAlert(object):
@@ -15,5 +17,5 @@ class TestAlert(object):
             b'\x16'
         )
         record = Alert.from_bytes(packet)
-        assert record.level == AlertLevel.FATAL
-        assert record.description == AlertDescription.RECORD_OVERFLOW
+        assert record.level == enums.AlertLevel.FATAL
+        assert record.description == enums.AlertDescription.RECORD_OVERFLOW
