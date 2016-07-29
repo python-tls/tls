@@ -12,6 +12,14 @@ tls._common.test.test_constructs module
     :undoc-members:
     :show-inheritance:
 
+tls._common.test.test_prf module
+--------------------------------
+
+.. automodule:: tls._common.test.test_prf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

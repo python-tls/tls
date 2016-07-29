@@ -27,6 +27,14 @@ tls._common.enums module
     :undoc-members:
     :show-inheritance:
 
+tls._common.prf module
+----------------------
+
+.. automodule:: tls._common.prf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

@@ -16,6 +16,7 @@ setuptools.setup(
     install_requires=[
         "attrs",
         "construct",
+        "cryptography",
         "enum34",
     ],
     packages=setuptools.find_packages()
