@@ -38,6 +38,7 @@ script:
         fi
 
 after_success:
+    - tox -e coverage-report-travis
     - coveralls
 
 notifications:

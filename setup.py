@@ -18,6 +18,7 @@ setuptools.setup(
         "construct==2.5.3",
         "cryptography",
         "enum34",
+        "hypothesis",
     ],
     packages=setuptools.find_packages()
 )

@@ -6,7 +6,13 @@ from __future__ import absolute_import, division, print_function
 
 from cryptography.hazmat.primitives import hashes
 
+from hypothesis import HealthCheck, given, settings, strategies as st
+
+import pytest
+
 from tls._common.prf import prf
+
+from tls.test._common import hypothesis_test
 
 
 class TestPRFVectors(object):
@@ -157,3 +163,107 @@ class TestPRFVectors(object):
         )
         actual_output = prf(secret, label, seed, hashes.SHA384(), 148)
         assert actual_output == expected_output
+
+
+def ascii_bytes(min_size, max_size):
+    """
+    A Hypothesis strategy that returns ASCII bytes.
+
+    :return: :py:class:`bytes`
+    """
+    ascii_char = st.integers(min_value=0, max_value=127)
+    # convert the list to a bytearray first, because bytearray's
+    # constructor takes an iterable of integers on both Python 2 and
+    # Python 3
+    return st.lists(elements=ascii_char,
+                    min_size=min_size,
+                    max_size=max_size).map(bytearray).map(bytes)
+
+
+def prf_given():
+    """
+    A wrapper for :py:func:`hypothesis.given` that establishes
+    parameters common to all Pseudo-Random Function tests.
+
+    :return: The same opaque type returned by
+             :py:func:`hypothesis.given`
+    """
+    _prf_given = given(secret=st.binary(max_size=4096),
+                       label=ascii_bytes(min_size=1, max_size=1024),
+                       # OpenSSL does not use seeds longer than 1024 bytes
+                       seed=st.binary(max_size=1024),
+                       hash_cls=st.sampled_from([
+                           hashes.SHA1,
+                           hashes.SHA224,
+                           hashes.SHA256,
+                           hashes.SHA384,
+                           hashes.SHA512,
+                           hashes.RIPEMD160,
+                           hashes.Whirlpool,
+                           hashes.MD5,
+                       ]),
+                       output_length=st.integers(min_value=0, max_value=1024))
+
+    def _ignore_slow_and_large_prf_given(function):
+        """
+        Suppress data generation and size speed checks.
+        """
+        ignore_slow = settings(suppress_health_check=[
+            HealthCheck.data_too_large,
+            HealthCheck.too_slow,
+        ])
+        return ignore_slow(_prf_given(function))
+
+    return _ignore_slow_and_large_prf_given
+
+
+@hypothesis_test
+class TestPRF(object):
+    """
+    Hypothesis tests for the Pseudo-random function
+    (:py:func:`tls._common.prf.prf`).
+    """
+
+    @pytest.fixture(scope="class")
+    def generated_with_params(self):
+        """
+        A class-scoped dictionary fixture for mapping PRF inputs to
+        outputs.
+
+        :return: :py:class:`dict`, for use in
+                 :py:meth:`tests.hypothesis.TestPRF.test_unique`
+        """
+        return {}
+
+    @prf_given()
+    def test_length_returned(self,
+                             secret,
+                             label,
+                             seed,
+                             hash_cls,
+                             output_length):
+        """
+        The output of :py:func:`tls._common.prf.prf` is exactly as long
+        as requested.
+        """
+        generated = prf(secret, label, seed, hash_cls(), output_length)
+        assert len(generated) == output_length
+
+    @prf_given()
+    def test_unique(self,
+                    secret,
+                    label,
+                    seed,
+                    hash_cls,
+                    output_length,
+                    generated_with_params):
+        """
+        No two inputs to :py:func:`tls._common.prf.prf` result in the
+        same output.
+        """
+        params = (secret, label, seed, hash_cls, output_length)
+        generated = prf(secret, label, seed, hash_cls(), output_length)
+        previously_generated = generated_with_params.get(params)
+        assert (previously_generated is None or
+                generated == previously_generated)
+        generated_with_params[params] = generated

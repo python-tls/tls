@@ -4,6 +4,14 @@ tls.test package
 Submodules
 ----------
 
+tls.test._common module
+-----------------------
+
+.. automodule:: tls.test._common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 tls.test.test_alert module
 --------------------------
 

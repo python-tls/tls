@@ -9,3 +9,4 @@ htmlcov/
 *.egg-info/
 *.egg
 *.py[co]
+.hypothesis
