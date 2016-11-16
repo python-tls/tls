@@ -195,7 +195,7 @@ class TestTLSPrefixedArray(object):
         A :py:func:`tls._common._constructs.TLSPrefixedArray` of
         :py:func:`construct.macros.UBInt8`.
         """
-        return TLSPrefixedArray(UBInt8("digit"))
+        return TLSPrefixedArray("digits", UBInt8("digit"))
 
     def test_build(self, tls_array, ints, uint8_encoded):
         """
@@ -250,7 +250,7 @@ class TestTLSPrefixedArrayWithLengthValidator(object):
         A :py:class:`tls._common._constructs.TLSPrefixedArray` specialized on
         :py:func:`construct.macros.UBInt8`
         """
-        return TLSPrefixedArray(UBInt8("data"))
+        return TLSPrefixedArray("data", UBInt8("datum"))
 
     @pytest.fixture
     def TLSUBInt8Length5Array(self):  # noqa
@@ -259,7 +259,7 @@ class TestTLSPrefixedArrayWithLengthValidator(object):
         :py:meth:`TLSPrefixedArrayWithLengthValidator.TLSUBInt8Length5Array`,
         but only accepts arrays of length 5.
         """
-        return TLSPrefixedArray(UBInt8("data"),
+        return TLSPrefixedArray("data", UBInt8("datum"),
                                 length_validator=Equals5)
 
     @pytest.mark.parametrize('invalid', [

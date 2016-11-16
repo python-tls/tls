@@ -71,21 +71,19 @@ def PrefixedBytes(name, length_field=construct.UBInt8("length")):  # noqa
     )
 
 
-def TLSPrefixedArray(subconn, length_name="length", length_validator=None):  # noqa
+def TLSPrefixedArray(name, subcon, length_validator=None):  # noqa
     """
     The `TLS vector type`_.  It specializes on another
     :py:class:`construct.Construct` and then encodes or decodes an
     arbitrarily long list or array of those constructs, prepending or
     reading a leading 16 bit length.
 
-    :param subconn: The construct this array contains.
-    :type subconn: ``construct.Construct``
+    :param name: The name by which the array will be accessible on the
+        returned :py:class:`construct.Container`.
+    :type name: :py:class:`str`
 
-    :param length_name: (optional) The attribute name under which the
-        :class:`construct.macros.UBInt16` representing this array's
-        length will be accessible.  You do not need to provide this
-        when encoding a python sequence!
-    :type length_name: :py:class:`str`
+    :param subcon: The construct this array contains.
+    :type subcon: :py:class:`construct.Construct`
 
     :param length_validator: (optional) A callable that validates the
         array's length construct.
@@ -93,15 +91,21 @@ def TLSPrefixedArray(subconn, length_name="length", length_validator=None):  # n
         construct of the array as its only argument and returns a
         :py:class:`construct.adapters.Validator`
 
-     ..  _TLS vector type:
+    ..  _TLS vector type:
         https://tools.ietf.org/html/rfc5246#section-4.3
     """
-    length_field = construct.UBInt16(length_name)
+    # This needs a name so that PrefixedBytes' length function can
+    # retrieve it
+    length_field = construct.UBInt16(name + "_length")
 
     if length_validator is not None:
         length_field = length_validator(length_field)
 
-    return construct.PrefixedArray(subconn, length_field=length_field)
+    return construct.TunnelAdapter(
+        PrefixedBytes(name,
+                      length_field=length_field),
+        construct.Range(0, 2 ** 16 - 1, subcon)
+    )
 
 
 def EnumClass(type_field, type_enum):  # noqa
@@ -195,8 +199,8 @@ class SizeAtLeast(construct.Validator):
         validated sequence.
     :type min_size: :py:class:`int`
     """
-    def __init__(self, subconn, min_size):
-        super(SizeAtLeast, self).__init__(subconn)
+    def __init__(self, subcon, min_size):
+        super(SizeAtLeast, self).__init__(subcon)
         self.min_size = min_size
 
     def _validate(self, obj, context):
@@ -223,8 +227,8 @@ class SizeAtMost(construct.Validator):
     :type max_size: :py:class:`int`
     """
 
-    def __init__(self, subconn, max_size):
-        super(SizeAtMost, self).__init__(subconn)
+    def __init__(self, subcon, max_size):
+        super(SizeAtMost, self).__init__(subcon)
         self.max_size = max_size
 
     def _validate(self, obj, context):
@@ -256,8 +260,8 @@ class SizeWithin(construct.Validator):
     :type max_size: :py:class:`int`
     """
 
-    def __init__(self, subconn, min_size, max_size):
-        super(SizeWithin, self).__init__(subconn)
+    def __init__(self, subcon, min_size, max_size):
+        super(SizeWithin, self).__init__(subcon)
         self.min_size = min_size
         self.max_size = max_size
 
