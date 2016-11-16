@@ -12,9 +12,11 @@ from construct.core import AdaptationError, Construct, Container
 
 import pytest
 
-from tls._common._constructs import (BytesAdapter, EnumClass, EnumSwitch,
-                                     PrefixedBytes, SizeAtLeast, SizeAtMost,
-                                     SizeWithin, TLSPrefixedArray, UBInt24,
+from tls._common._constructs import (BytesAdapter, EnumClass,
+                                     EnumSwitch, Opaque,
+                                     PrefixedBytes, SizeAtLeast,
+                                     SizeAtMost, SizeWithin,
+                                     TLSPrefixedArray, UBInt24,
                                      _UBInt24)
 
 
@@ -303,6 +305,34 @@ class TestTLSPrefixedArrayWithLengthValidator(object):
         """
         valid = [1, 2, 3, 4, 5]
         assert TLSUBInt8Array.build(valid) == TLSUBInt8Array.build(valid)
+
+
+class TestOpaque(object):
+    """
+    Tests for :py:func:`tls._common._constructs.Opaque`.
+    """
+
+    @pytest.fixture
+    def opaque_ubint16(self):
+        """
+        A :py:func:`tls._common._constructs.Opaque` specialized on
+        :py:func:`construct.UBInt16`.
+        """
+        return Opaque(UBInt16("datum"))
+
+    def test_parse(self, opaque_ubint16):
+        """
+        :py:func:`tls._common._constructs.Opaque` decodes an opaque 16
+        bit integer.
+        """
+        assert opaque_ubint16.parse(b'\x00\x02\x02\x80') == 640
+
+    def test_build(self, opaque_ubint16):
+        """
+        :py:func:`tls._common._constructs.Opaque` encodes a 16 bit
+        integer as an opaque sequence of bytes.
+        """
+        assert opaque_ubint16.build(640) == b'\x00\x02\x02\x80'
 
 
 class IntegerEnum(enum.Enum):

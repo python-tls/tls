@@ -108,6 +108,29 @@ def TLSPrefixedArray(name, subcon, length_validator=None):  # noqa
     )
 
 
+def Opaque(subcon):  # noqa
+    """
+    An `opaque`_ sequence of bytes.  Such a sequence consists of a 16
+    bit integer followed that many bytes.  It behaves like
+    :py:class:`TLSPrefixedArray` except that it returns a single
+    construct instance and not a sequence of them.
+
+    :param subcon: The construct to wrap.
+    :type subcon: :py:class:`construct.Construct`
+
+    .. _opaque:
+        https://tools.ietf.org/html/rfc5246#section-4.3
+
+    """
+
+    length_field = construct.UBInt16(subcon.name + "_opaque_length")
+    return construct.TunnelAdapter(
+        PrefixedBytes(subcon.name,
+                      length_field),
+        subcon,
+    )
+
+
 def EnumClass(type_field, type_enum):  # noqa
     """
     Maps the members of an :py:class:`enum.Enum` to a single kind of
