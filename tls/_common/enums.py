@@ -88,9 +88,43 @@ class AlertDescription(Enum):
 
 
 class ExtensionType(Enum):
+    """
+    TLS extensions as assigned in
+    http://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml.
+    """
+    SERVER_NAME = 0
+    MAX_FRAGMENT_LENGTH = 1
+    CLIENT_CERTIFICATE_URL = 2
+    TRUSTED_CA_KEYS = 3
+    TRUNCATED_HMAC = 4
+    STATUS_REQUEST = 5
+    USER_MAPPING = 6
+    CLIENT_AUTHZ = 7
+    SERVER_AUTHZ = 8
+    CERT_TYPE = 9
+    SUPPORTED_GROUPS = 10
+    EC_POINT_FORMATS = 11
+    SRP = 12
     SIGNATURE_ALGORITHMS = 13
-    # XXX: See http://tools.ietf.org/html/rfc5246#ref-TLSEXT
+    USE_SRTP = 14
+    HEARTBEAT = 15
+    APPLICATION_LAYER_PROTOCOL_NEGOTIATION = 16
+    STATUS_REQUEST_V2 = 17
+    SIGNED_CERTIFICATE_TIMESTAMP = 18
+    CLIENT_CERTIFICATE_TYPE = 19
+    SERVER_CERTIFICATE_TYPE = 20
+    PADDING = 21
+    ENCRYPT_THEN_MAC = 22
+    EXTENDED_MASTER_SECRET = 23
+    # TOKEN_BINDING = 24  (TEMPORARY - registered 2016-02-04, expires
+    #                      2017-02-04) [draft-ietf-tokbind-negotiation]
+    CACHED_INFO = 25
+    RENEGOTIATION_INFO = 65281
 
 
 class CompressionMethod(Enum):
     NULL = 0
+
+
+class NameType(Enum):
+    HOST_NAME = 0

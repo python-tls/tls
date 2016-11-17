@@ -35,6 +35,22 @@ class TestClientHello(object):
         b''  # extensions.extensions
     )
 
+    supported_signature_list_extension_data = (
+        b'\x00\x0D'  # extensions[0].extension_type
+        b'\x00\x16'  # extensions[0].length
+        b'\x00\x14'  # The length of signature_algorithms vector
+        b'\x04\x01'  # SHA256, RSA
+        b'\x05\x01'  # SHA384, RSA
+        b'\x06\x01'  # SHA512, RSA
+        b'\x02\x01'  # SHA1, RSA
+        b'\x04\x03'  # SHA256, ECDSA
+        b'\x05\x03'  # SHA384, ECDSA
+        b'\x06\x03'  # SHA512, ECDSA
+        b'\x02\x03'  # SHA1, ECDSA
+        b'\x04\x02'  # SHA256, DSA
+        b'\x02\x02'  # SHA1, DSA
+    )
+
     extensions_packet = (
         b'\x03\x00'  # client_version
         b'\x01\x02\x03\x04'  # random.gmt_unix_time
@@ -45,11 +61,8 @@ class TestClientHello(object):
         b'\x00\x6B'  # cipher_suites
         b'\x01'  # compression_methods length
         b'\x00'  # compression_methods
-        b'\x00\x08'  # extensions length
-        b'\x00\x0D'  # extensions.extensions.extension_type
-        b'\x00\x04'  # extensions.extensions.extensions_data length
-        b'abcd'  # extensions.extensions.extension_data
-    )
+        b'\x00\x1a'  # extensions length
+    ) + supported_signature_list_extension_data
 
     compression_methods_too_short_packet = (
         b'\x03\x00'  # client_version
@@ -61,11 +74,8 @@ class TestClientHello(object):
         b'\x00\x6B'  # cipher_suites
         b'\x00'  # compression_methods length
         b''  # compression_methods
-        b'\x00\x08'  # extensions length
-        b'\x00\x0D'  # extensions.extensions.extension_type
-        b'\x00\x04'  # extensions.extensions.extensions_data length
-        b'abcd'  # extensions.extensions.extension_data
-    )
+        b'\x00\x1a'  # extensions length
+    ) + supported_signature_list_extension_data
 
     cipher_suites_too_short_packet = (
         b'\x03\x00'  # client_version
@@ -121,7 +131,7 @@ class TestClientHello(object):
         assert len(record.extensions) == 1
         assert (record.extensions[0].type ==
                 enums.ExtensionType.SIGNATURE_ALGORITHMS)
-        assert record.extensions[0].data == b'abcd'
+        assert len(record.extensions[0].data) == 10
 
     def test_parse_client_hello_compression_methods_too_short(self):
         """
@@ -132,7 +142,7 @@ class TestClientHello(object):
             ClientHello.from_bytes(self.compression_methods_too_short_packet)
         assert exc_info.value.args == ('invalid object', 0)
 
-    def test_as_bytes_client_hello_compression_methosds_too_short(self):
+    def test_as_bytes_client_hello_compression_methods_too_short(self):
         """
         :py:func:`tls.hello_message.ClientHello` fails to construct a
         packet whose ``compression_methods`` would be too short.
@@ -181,6 +191,22 @@ class TestServerHello(object):
         b''  # extensions.extensions
     )
 
+    supported_signature_list_extension_data = (
+        b'\x00\x0D'  # extensions[0].extension_type
+        b'\x00\x16'  # extensions[0].length
+        b'\x00\x14'  # The length of signature_algorithms vector
+        b'\x04\x01'  # SHA256, RSA
+        b'\x05\x01'  # SHA384, RSA
+        b'\x06\x01'  # SHA512, RSA
+        b'\x02\x01'  # SHA1, RSA
+        b'\x04\x03'  # SHA256, ECDSA
+        b'\x05\x03'  # SHA384, ECDSA
+        b'\x06\x03'  # SHA512, ECDSA
+        b'\x02\x03'  # SHA1, ECDSA
+        b'\x04\x02'  # SHA256, DSA
+        b'\x02\x02'  # SHA1, DSA
+    )
+
     extensions_packet = (
         b'\x03\x00'  # server_version
         b'\x01\x02\x03\x04'  # random.gmt_unix_time
@@ -189,11 +215,8 @@ class TestServerHello(object):
         b'01234567890123456789012345678901'  # session_id
         b'\x00\x6B'  # cipher_suite
         b'\x00'  # compression_method
-        b'\x00\x08'  # extensions.length
-        b'\x00\x0D'  # extensions.extensions.extension_type
-        b'\x00\x04'  # extensions.extensions.extensions_data length
-        b'abcd'  # extensions.extensions.extension_data
-    )
+        b'\x00\x1a'  # extensions length
+    ) + supported_signature_list_extension_data
 
     def test_parse_server_hello(self):
         """
@@ -220,7 +243,7 @@ class TestServerHello(object):
         assert len(record.extensions) == 1
         assert (record.extensions[0].type ==
                 enums.ExtensionType.SIGNATURE_ALGORITHMS)
-        assert record.extensions[0].data == b'abcd'
+        assert len(record.extensions[0].data) == 10
 
     def test_as_bytes_no_extensions(self):
         """

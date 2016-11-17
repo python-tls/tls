@@ -287,6 +287,22 @@ class TestHandshakeStructParsing(object):
     """
     Tests for parsing of :py:class:`tls.messages.Handshake` structs.
     """
+    supported_signature_list_extension_data = (
+        b'\x00\x0D'  # extensions[0].extension_type
+        b'\x00\x16'  # extensions[0].length
+        b'\x00\x14'  # The length of signature_algorithms vector
+        b'\x04\x01'  # SHA256, RSA
+        b'\x05\x01'  # SHA384, RSA
+        b'\x06\x01'  # SHA512, RSA
+        b'\x02\x01'  # SHA1, RSA
+        b'\x04\x03'  # SHA256, ECDSA
+        b'\x05\x03'  # SHA384, ECDSA
+        b'\x06\x03'  # SHA512, ECDSA
+        b'\x02\x03'  # SHA1, ECDSA
+        b'\x04\x02'  # SHA256, DSA
+        b'\x02\x02'  # SHA1, DSA
+    )
+
     client_hello_packet = (
         b'\x03\x00'  # client_version
         b'\x01\x02\x03\x04'  # random.gmt_unix_time
@@ -297,15 +313,12 @@ class TestHandshakeStructParsing(object):
         b'\x00\x6B'  # cipher_suites
         b'\x01'  # compression_methods length
         b'\x00'  # compression_methods
-        b'\x00\x08'  # extensions length
-        b'\x00\x0D'  # extensions.extensions.extension_type
-        b'\x00\x04'  # extensions.extensions.extensions_data length
-        b'abcd'  # extensions.extensions.extension_data
-    )
+        b'\x00\x1a'  # extensions length
+    ) + supported_signature_list_extension_data
 
     client_hello_handshake_packet = (
         b'\x01'  # msg_type
-        b'\x00\x003'  # body length
+        b'\x00\x00\x45'  # body length
     ) + client_hello_packet
 
     server_hello_packet = (
@@ -316,15 +329,12 @@ class TestHandshakeStructParsing(object):
         b'01234567890123456789012345678901'  # session_id
         b'\x00\x6B'  # cipher_suite
         b'\x00'  # compression_method
-        b'\x00\x08'  # extensions.length
-        b'\x00\x0D'  # extensions.extensions.extension_type
-        b'\x00\x04'  # extensions.extensions.extensions_data length
-        b'abcd'  # extensions.extensions.extension_data
-    )
+        b'\x00\x1a'  # extensions length
+    ) + supported_signature_list_extension_data
 
     server_hello_handshake_packet = (
         b'\x02'  # msg_type
-        b'\x00\x00P'  # body length
+        b'\x00\x00\x62'  # body length
     ) + server_hello_packet
 
     certificate_packet = (
@@ -381,14 +391,14 @@ class TestHandshakeStructParsing(object):
         record = Handshake.from_bytes(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == enums.HandshakeType.CLIENT_HELLO
-        assert record.length == 51
+        assert record.length == 69
         assert isinstance(record.body, ClientHello)
 
     def test_parse_server_hello_in_handshake(self):
         record = Handshake.from_bytes(self.server_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == enums.HandshakeType.SERVER_HELLO
-        assert record.length == 80
+        assert record.length == 98
         assert isinstance(record.body, ServerHello)
 
     def test_parse_certificate_request_in_handshake(self):

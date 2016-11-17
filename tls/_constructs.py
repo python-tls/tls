@@ -8,9 +8,11 @@ from functools import partial
 
 from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
 
-from tls._common._constructs import (EnumClass, PrefixedBytes, SizeAtLeast,
-                                     SizeAtMost, SizeWithin, TLSPrefixedArray,
-                                     UBInt24)
+from tls._common import enums
+
+from tls._common._constructs import (EnumClass, EnumSwitch, Opaque,
+                                     PrefixedBytes, SizeAtLeast, SizeAtMost,
+                                     SizeWithin, TLSPrefixedArray, UBInt24)
 
 from tls.ciphersuites import CipherSuites
 
@@ -59,18 +61,39 @@ SessionID = Struct(
     PrefixedBytes("session_id"),
 )
 
-
 CompressionMethods = Struct(
     "compression_methods",
     SizeAtLeast(UBInt8("length"), min_size=1),
     Array(lambda ctx: ctx.length, UBInt8("compression_methods"))
 )
 
+SignatureAndHashAlgorithm = Struct(
+    "algorithms",
+    EnumClass(UBInt8("hash"), enums.HashAlgorithm),
+    EnumClass(UBInt8("signature"), enums.SignatureAlgorithm),
+)
+
+SupportedSignatureAlgorithms = TLSPrefixedArray(
+    "supported_signature_algorithms",
+    SignatureAndHashAlgorithm,
+    length_validator=partial(SizeAtLeast, min_size=1),
+)
+
 Extension = Struct(
     "extensions",
-    UBInt16("type"),
-    PrefixedBytes("data", UBInt16("length")),
+    *EnumSwitch(
+        type_field=UBInt16("type"),
+        type_enum=enums.ExtensionType,
+        value_field="data",
+        value_choices={
+            enums.ExtensionType.SIGNATURE_ALGORITHMS: Opaque(
+                SupportedSignatureAlgorithms
+            ),
+        }
+    )
 )
+
+Extensions = TLSPrefixedArray("extensions", Extension)
 
 ClientHello = Struct(
     "ClientHello",
@@ -81,8 +104,7 @@ ClientHello = Struct(
                      EnumClass(UBInt8("cipher_suite"), CipherSuites),
                      length_validator=partial(SizeAtLeast, min_size=1)),
     CompressionMethods,
-    UBInt16("extensions_length"),
-    Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
+    Extensions,
 )
 
 ServerHello = Struct(
@@ -92,8 +114,7 @@ ServerHello = Struct(
     SessionID,
     Bytes("cipher_suite", 2),
     UBInt8("compression_method"),
-    UBInt16("extensions_length"),
-    Bytes("extensions_bytes", lambda ctx: ctx.extensions_length),
+    Extensions,
 )
 
 ClientCertificateType = Struct(
@@ -102,21 +123,6 @@ ClientCertificateType = Struct(
     Array(lambda ctx: ctx.length, UBInt8("certificate_types")),
 )
 
-SignatureAndHashAlgorithm = Struct(
-    "algorithms",
-    UBInt8("hash"),
-    UBInt8("signature"),
-)
-
-SupportedSignatureAlgorithms = Struct(
-    "supported_signature_algorithms",
-    SizeAtLeast(UBInt16("supported_signature_algorithms_length"),
-                min_size=1),
-    Array(
-        lambda ctx: ctx.supported_signature_algorithms_length / 2,
-        SignatureAndHashAlgorithm,
-    ),
-)
 
 DistinguishedName = Struct(
     "certificate_authorities",

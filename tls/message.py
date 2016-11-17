@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import attr
 
-from construct import Container
+from construct import Container, ListContainer
 
 from six import BytesIO
 
@@ -49,16 +49,9 @@ class CertificateRequest(object):
                 certificate_types=[cert_type.value
                                    for cert_type in self.certificate_types]
             ),
-            supported_signature_algorithms=Container(
-                supported_signature_algorithms_length=2 * len(
-                    self.supported_signature_algorithms
-                ),
-                algorithms=[Container(
-                    hash=algorithm.hash.value,
-                    signature=algorithm.signature.value,
-                )
-                    for algorithm in self.supported_signature_algorithms
-                ]
+            supported_signature_algorithms=ListContainer(
+                Container(hash=algorithm.hash, signature=algorithm.signature)
+                for algorithm in self.supported_signature_algorithms
             ),
             certificate_authorities=Container(
                 length=len(self.certificate_authorities),
@@ -82,11 +75,11 @@ class CertificateRequest(object):
             ],
             supported_signature_algorithms=[
                 SignatureAndHashAlgorithm(
-                    hash=enums.HashAlgorithm(algorithm.hash),
-                    signature=enums.SignatureAlgorithm(algorithm.signature),
+                    hash=algorithm.hash,
+                    signature=algorithm.signature,
                 )
                 for algorithm in (
-                    construct.supported_signature_algorithms.algorithms
+                    construct.supported_signature_algorithms
                 )
             ],
             certificate_authorities=(
