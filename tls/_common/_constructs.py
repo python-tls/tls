@@ -149,7 +149,8 @@ def EnumClass(type_field, type_enum):  # noqa
     return construct.SymmetricMapping(type_field, mapping)
 
 
-def EnumSwitch(type_field, type_enum, value_field, value_choices):  # noqa
+def EnumSwitch(type_field, type_enum, value_field, value_choices,  # noqa
+               default=construct.Switch.NoDefault):
     """
     Maps the members of an :py:class:`enum.Enum` to arbitrary
     :py:func:`construct.Constructs`.  It returns a tuple intended to
@@ -193,13 +194,21 @@ def EnumSwitch(type_field, type_enum, value_field, value_choices):  # noqa
         match any members without an explicit mapping.
     :type value_choices: :py:class:`dict`
 
+    :param default: A default field to use when no explicit match is found for
+        the key in the provided mapping. This follows
+        :py:func:`construct.core.Switch`'s API, so if not supplied, an
+        exception will be raised when the key is not found.
+        :py:class:`construct.Pass` can be used for do-nothing.
+    :type default: :py:class:`construct.Construct`
+
     :return: A :py:class:`tuple` of the form (:py:func:`EnumClass`,
              :py:func:`construct.core.Switch`)
     """
     return (EnumClass(type_field, type_enum),
             construct.Switch(value_field,
                              operator.attrgetter(type_field.name),
-                             value_choices))
+                             value_choices,
+                             default=default))
 
 
 class SizeAtLeast(construct.Validator):

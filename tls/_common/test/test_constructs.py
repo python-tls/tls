@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import enum
 
-from construct import Struct, UBInt16, UBInt8
+from construct import Pass, Struct, UBInt16, UBInt8
 from construct.adapters import MappingError, ValidationError, Validator
 from construct.core import AdaptationError, Construct, Container
 
@@ -447,6 +447,47 @@ class TestEnumSwitch(object):
         container = Container(type=type_, value=value)
         unparsed = UBInt8EnumMappedStruct.build(container)
         assert UBInt8EnumMappedStruct.parse(unparsed) == container
+
+
+@pytest.mark.parametrize('type_,value,encoded', [
+    (IntegerEnum.SECOND, None, b'\x02'),
+])
+class TestEnumSwitchWithDefault(object):
+    """
+    Tests for :py:func:`tls._common._constructs.EnumSwitch`, when a default is
+    provided, and no matching members are found for the input keys.
+    """
+    @pytest.fixture
+    def UBInt8EnumMappedStructWithDefault(self):  # noqa
+        """
+        Like ``UBInt8EnumMappedStruct`` but with a default value.
+        """
+        return Struct(
+            "UBInt8EnumMappedStructWithDefault",
+            *EnumSwitch(type_field=UBInt8("type"),
+                        type_enum=IntegerEnum,
+                        value_field="value",
+                        value_choices={
+                            IntegerEnum.FIRST: UBInt16("UBInt16")},
+                        default=Pass))
+
+    def test_parse_default(self, UBInt8EnumMappedStructWithDefault, type_, value, encoded):  # noqa
+        """
+        A struct that contains :py:func:`tls._common._constructs.EnumSwitch`
+        decodes its value field according to the enum member specified in the
+        default, when no match is found in the``value_choices`` provided.
+        """
+        container = UBInt8EnumMappedStructWithDefault.parse(encoded)
+        assert Container(type=type_, value=value) == container
+
+    def test_build_default(self, UBInt8EnumMappedStructWithDefault, type_, value, encoded):  # noqa
+        """
+        A struct that contains :py:func:`tls._common._constructs.EnumSwitch`
+        encodes its ``value_field`` according to the ``default`` specified when
+        no match is found in the ``value_choices`` provided.
+        """
+        container = Container(type=type_, value=value)
+        assert UBInt8EnumMappedStructWithDefault.build(container) == encoded
 
 
 @pytest.mark.parametrize('min_size,num,acceptable', [

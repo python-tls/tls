@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from construct import Array, Bytes, Struct, UBInt16, UBInt32, UBInt8
+from construct import Array, Bytes, Pass, Struct, UBInt16, UBInt32, UBInt8
 
 from tls._common import enums
 
@@ -89,7 +89,8 @@ Extension = Struct(
             enums.ExtensionType.SIGNATURE_ALGORITHMS: Opaque(
                 SupportedSignatureAlgorithms
             ),
-        }
+        },
+        default=Pass,
     )
 )
 
