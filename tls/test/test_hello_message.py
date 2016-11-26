@@ -8,9 +8,13 @@ from construct.adapters import ValidationError
 
 import pytest
 
+from tls import _constructs
+
 from tls._common import enums
 
 from tls.ciphersuites import CipherSuites
+
+from tls.exceptions import UnsupportedExtensionException
 
 from tls.hello_message import ClientHello, ServerHello
 
@@ -20,7 +24,7 @@ class TestClientHello(object):
     Tests for the parsing of ClientHello messages.
     """
 
-    no_extensions_packet = (
+    common_client_hello_data = (
         b'\x03\x00'  # client_version
         b'\x01\x02\x03\x04'  # random.gmt_unix_time
         b'0123456789012345678901234567'  # random.random_bytes
@@ -30,6 +34,9 @@ class TestClientHello(object):
         b'\x00\x6B'  # cipher_suites
         b'\x01'  # compression_methods length
         b'\x00'  # compression_methods
+    )
+
+    no_extensions_packet = common_client_hello_data + (
         b'\x00\x00'  # extensions.length
         b''  # extensions.extension_type
         b''  # extensions.extensions
@@ -51,16 +58,7 @@ class TestClientHello(object):
         b'\x02\x02'  # SHA1, DSA
     )
 
-    extensions_packet = (
-        b'\x03\x00'  # client_version
-        b'\x01\x02\x03\x04'  # random.gmt_unix_time
-        b'0123456789012345678901234567'  # random.random_bytes
-        b'\x00'  # session_id.length
-        b''  # session_id.session_id
-        b'\x00\x02'  # cipher_suites length
-        b'\x00\x6B'  # cipher_suites
-        b'\x01'  # compression_methods length
-        b'\x00'  # compression_methods
+    extensions_packet = common_client_hello_data + (
         b'\x00\x1a'  # extensions length
     ) + supported_signature_list_extension_data
 
@@ -92,6 +90,19 @@ class TestClientHello(object):
         b''  # extensions.extensions.extensions_data length
         b''  # extensions.extensions.extension_data
     )
+
+    server_name_extension_data = (
+        b'\x00\x00'  # Extension Type: Server Name
+        b'\x00\x0e'  # Length
+        b'\x00\x0c'  # Server Name Indication Length
+        b'\x00'  # Server Name Type: host_name
+        b'\x00\x09'  # Length of hostname data
+        b'localhost'
+    )
+
+    client_hello_packet_with_server_name_ext = common_client_hello_data + (
+        b'\x00\x12'
+    ) + server_name_extension_data
 
     def test_resumption_no_extensions(self):
         """
@@ -173,12 +184,65 @@ class TestClientHello(object):
             record.as_bytes()
         assert exc_info.value.args == ('invalid object', 0)
 
+    def test_client_hello_with_server_name_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` parses a packet with a
+        server_name extension
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_packet_with_server_name_ext
+        )
+        assert len(record.extensions) == 1
+        assert record.extensions[0].type == enums.ExtensionType.SERVER_NAME
+        assert len(record.extensions[0].data) == 1
+        server_name_list = record.extensions[0].data
+        assert server_name_list[0].name_type == enums.NameType.HOST_NAME
+        assert server_name_list[0].name == b'localhost'
+
+    def test_hello_from_bytes_with_unsupported_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` does not parse a packet
+        with an unsupported extension, and raises an error.
+        """
+        server_certificate_type_extension_data = (
+            b'\x00\x14'  # Extension Type: Server Certificate Type
+            b'\x00\x00'  # Length
+            b''  # Data
+        )
+
+        client_hello_packet = self.common_client_hello_data + (
+            b'\x00\x04'
+        ) + server_certificate_type_extension_data
+
+        with pytest.raises(UnsupportedExtensionException):
+            ClientHello.from_bytes(
+                client_hello_packet
+            )
+
+    def test_as_bytes_unsupported_extension(self):
+        """
+        :func:`ClientHello.as_bytes` fails to serialize a message that
+        contains invalid extensions
+        """
+        extensions_data = (
+            b'\x00\x04'
+            b'\x00\x14'  # Extension Type: Server Certificate Type
+            b'\x00\x00'  # Length
+            b''  # Data
+        )
+
+        record = ClientHello.from_bytes(self.no_extensions_packet)
+        extensions = _constructs.Extensions.parse(extensions_data)
+        record.extensions = extensions
+        with pytest.raises(UnsupportedExtensionException):
+            record.as_bytes()
+
 
 class TestServerHello(object):
     """
     Tests for the parsing of ServerHello messages.
     """
-    no_extensions_packet = (
+    common_server_hello_data = (
         b'\x03\x00'  # server_version
         b'\x01\x02\x03\x04'  # random.gmt_unix_time
         b'0123456789012345678901234567'  # random.random_bytes
@@ -186,6 +250,9 @@ class TestServerHello(object):
         b'01234567890123456789012345678901'  # session_id
         b'\x00\x6B'  # cipher_suite
         b'\x00'  # compression_method
+    )
+
+    no_extensions_packet = common_server_hello_data + (
         b'\x00\x00'  # extensions.length
         b''  # extensions.extension_type
         b''  # extensions.extensions
@@ -207,14 +274,7 @@ class TestServerHello(object):
         b'\x02\x02'  # SHA1, DSA
     )
 
-    extensions_packet = (
-        b'\x03\x00'  # server_version
-        b'\x01\x02\x03\x04'  # random.gmt_unix_time
-        b'0123456789012345678901234567'  # random.random_bytes
-        b'\x20'  # session_id.length
-        b'01234567890123456789012345678901'  # session_id
-        b'\x00\x6B'  # cipher_suite
-        b'\x00'  # compression_method
+    extensions_packet = common_server_hello_data + (
         b'\x00\x1a'  # extensions length
     ) + supported_signature_list_extension_data
 
@@ -236,14 +296,11 @@ class TestServerHello(object):
 
     def test_parse_server_hello_extensions(self):
         """
-        :func:`parse_server_hello` returns an instance of :class:`ServerHello`
-        with extensions, when the extension bytes are present in the input.
+        :func:`parse_server_hello` fails to parse when
+        SIGNATURE_ALGORITHMS extension bytes are present in the packet
         """
-        record = ServerHello.from_bytes(self.extensions_packet)
-        assert len(record.extensions) == 1
-        assert (record.extensions[0].type ==
-                enums.ExtensionType.SIGNATURE_ALGORITHMS)
-        assert len(record.extensions[0].data) == 10
+        with pytest.raises(UnsupportedExtensionException):
+            ServerHello.from_bytes(self.extensions_packet)
 
     def test_as_bytes_no_extensions(self):
         """
@@ -252,9 +309,46 @@ class TestServerHello(object):
         record = ServerHello.from_bytes(self.no_extensions_packet)
         assert record.as_bytes() == self.no_extensions_packet
 
-    def test_as_bytes_with_extensions(self):
+    def test_server_hello_fails_with_server_name_extension(self):
         """
-        :func:`ServerHello.as_bytes` returns the bytes it was created with
+        :py:func:`tls.hello_message.ServerHello` does not parse a packet
+        with a server_name extension, and raises an error.
         """
-        record = ServerHello.from_bytes(self.extensions_packet)
-        assert record.as_bytes() == self.extensions_packet
+        server_name_extension_data = (
+            b'\x00\x00'  # Extension Type: Server Name
+            b'\x00\x0e'  # Length
+            b'\x00\x0c'  # Server Name Indication Length
+            b'\x00'  # Server Name Type: host_name
+            b'\x00\x09'  # Length of hostname data
+            b'localhost'
+        )
+
+        server_hello_packet = self.common_server_hello_data + (
+            b'\x00\x12'
+        ) + server_name_extension_data
+
+        with pytest.raises(UnsupportedExtensionException):
+            ServerHello.from_bytes(
+                server_hello_packet
+            )
+
+    def test_as_bytes_unsupported_extension(self):
+        """
+        :func:`ServerHello.as_bytes` fails to serialize a message that
+        contains invalid extensions
+        """
+        extensions_data = (
+            b'\x00\x12'
+            b'\x00\x00'  # Extension Type: Server Name
+            b'\x00\x0e'  # Length
+            b'\x00\x0c'  # Server Name Indication Length
+            b'\x00'  # Server Name Type: host_name
+            b'\x00\x09'  # Length of hostname data
+            b'localhost'
+        )
+
+        record = ServerHello.from_bytes(self.no_extensions_packet)
+        extensions = _constructs.Extensions.parse(extensions_data)
+        record.extensions = extensions
+        with pytest.raises(UnsupportedExtensionException):
+            record.as_bytes()

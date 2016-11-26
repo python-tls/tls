@@ -329,12 +329,12 @@ class TestHandshakeStructParsing(object):
         b'01234567890123456789012345678901'  # session_id
         b'\x00\x6B'  # cipher_suite
         b'\x00'  # compression_method
-        b'\x00\x1a'  # extensions length
-    ) + supported_signature_list_extension_data
+        b'\x00\x00'  # extensions.length
+    )
 
     server_hello_handshake_packet = (
         b'\x02'  # msg_type
-        b'\x00\x00\x62'  # body length
+        b'\x00\x00\x48'  # body length
     ) + server_hello_packet
 
     certificate_packet = (
@@ -398,7 +398,7 @@ class TestHandshakeStructParsing(object):
         record = Handshake.from_bytes(self.server_hello_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == enums.HandshakeType.SERVER_HELLO
-        assert record.length == 98
+        assert record.length == 72
         assert isinstance(record.body, ServerHello)
 
     def test_parse_certificate_request_in_handshake(self):

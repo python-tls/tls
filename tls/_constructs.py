@@ -6,7 +6,8 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from construct import Array, Bytes, Pass, Struct, UBInt16, UBInt32, UBInt8
+from construct import (Array, Bytes, Pass, Struct, Switch, UBInt16, UBInt32,
+                       UBInt8)
 
 from tls._common import enums
 
@@ -67,6 +68,22 @@ CompressionMethods = Struct(
     Array(lambda ctx: ctx.length, UBInt8("compression_methods"))
 )
 
+HostName = PrefixedBytes("hostname", UBInt16("length"))
+
+ServerName = Struct(
+    "server_name",
+    EnumClass(UBInt8("name_type"), enums.NameType),
+    Switch(
+        "name",
+        lambda ctx: ctx.name_type,
+        {
+            enums.NameType.HOST_NAME: HostName
+        }
+    )
+)
+
+ServerNameList = TLSPrefixedArray("server_name_list", ServerName)
+
 SignatureAndHashAlgorithm = Struct(
     "algorithms",
     EnumClass(UBInt8("hash"), enums.HashAlgorithm),
@@ -86,6 +103,7 @@ Extension = Struct(
         type_enum=enums.ExtensionType,
         value_field="data",
         value_choices={
+            enums.ExtensionType.SERVER_NAME: Opaque(ServerNameList),
             enums.ExtensionType.SIGNATURE_ALGORITHMS: Opaque(
                 SupportedSignatureAlgorithms
             ),

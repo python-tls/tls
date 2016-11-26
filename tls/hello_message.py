@@ -12,6 +12,8 @@ from tls import _constructs
 
 from tls._common import enums
 
+from tls.exceptions import UnsupportedExtensionException
+
 
 @attr.s
 class ProtocolVersion(object):
@@ -32,6 +34,15 @@ class Random(object):
 
 
 @attr.s
+class ServerName(object):
+    """
+    An object representing a ServerName struct.
+    """
+    name_type = attr.ib()
+    name = attr.ib()
+
+
+@attr.s
 class ClientHello(object):
     """
     An object representing a ClientHello message.
@@ -42,8 +53,20 @@ class ClientHello(object):
     cipher_suites = attr.ib()
     compression_methods = attr.ib()
     extensions = attr.ib()
+    allowed_extensions = frozenset([
+        enums.ExtensionType.SERVER_NAME,
+        enums.ExtensionType.MAX_FRAGMENT_LENGTH,
+        enums.ExtensionType.CLIENT_CERTIFICATE_URL,
+        enums.ExtensionType.SIGNATURE_ALGORITHMS,
+        # XXX Incomplete list, needs to be populated as we implement more
+        # extensions.
+    ])
 
     def as_bytes(self):
+        if any(extension.type not in self.allowed_extensions
+               for extension in self.extensions):
+            raise UnsupportedExtensionException
+
         return _constructs.ClientHello.build(
             Container(
                 version=Container(major=self.client_version.major,
@@ -72,6 +95,9 @@ class ClientHello(object):
         :return: ClientHello object.
         """
         construct = _constructs.ClientHello.parse(bytes)
+        if any(extension.type not in cls.allowed_extensions
+               for extension in construct.extensions):
+            raise UnsupportedExtensionException
         return ClientHello(
             client_version=ProtocolVersion(
                 major=construct.version.major,
@@ -101,8 +127,13 @@ class ServerHello(object):
     cipher_suite = attr.ib()
     compression_method = attr.ib()
     extensions = attr.ib()
+    allowed_extensions = frozenset([])
 
     def as_bytes(self):
+        if any(extension.type not in self.allowed_extensions
+               for extension in self.extensions):
+            raise UnsupportedExtensionException
+
         return _constructs.ServerHello.build(
             Container(
                 version=Container(major=self.server_version.major,
@@ -128,6 +159,9 @@ class ServerHello(object):
         :return: ServerHello object.
         """
         construct = _constructs.ServerHello.parse(bytes)
+        if any(extension.type not in cls.allowed_extensions
+               for extension in construct.extensions):
+            raise UnsupportedExtensionException
         return ServerHello(
             server_version=ProtocolVersion(
                 major=construct.version.major,
