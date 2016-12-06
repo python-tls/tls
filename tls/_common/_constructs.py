@@ -10,6 +10,8 @@ import construct
 
 import six
 
+from tls.exceptions import TLSValidationException
+
 
 class _UBInt24(construct.Adapter):
     def _encode(self, obj, context):
@@ -209,6 +211,39 @@ def EnumSwitch(type_field, type_enum, value_field, value_choices,  # noqa
                              operator.attrgetter(type_field.name),
                              value_choices,
                              default=default))
+
+
+class TLSExprValidator(construct.Validator):
+    """
+    Like :py:class:`construct.ExprValidator`, but raises a
+    :py:class:`tls.exceptions.TLSValidationException` on validation failure.
+
+    This is necessary because any ConstructError signifies the end of
+    subconstruct repetition to Range, which in turn breaks use with
+    ``TLSPrefixedArray``.
+    """
+    def __init__(self, subcon, validator):
+        super(TLSExprValidator, self).__init__(subcon)
+        self._validate = validator
+
+    def _decode(self, obj, context):
+        if not self._validate(obj, context):
+            raise TLSValidationException("object failed validation", obj)
+        return obj
+
+
+def TLSOneOf(subcon, valids):  # noqa
+    """
+    Validates that the object is one of the listed values, both during parsing
+    and building. Like :py:meth:`construct.OneOf`, but raises a
+    :py:class:`tls.exceptions.TLSValidationException` instead of a
+    ``ConstructError`` subclass on mismatch.
+
+    This is necessary because any ConstructError signifies the end of
+    subconstruct repetition to Range, which in turn breaks use with
+    ``TLSPrefixedArray``.
+    """
+    return TLSExprValidator(subcon, lambda obj, ctx: obj in valids)
 
 
 class SizeAtLeast(construct.Validator):

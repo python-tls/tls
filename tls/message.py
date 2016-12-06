@@ -205,6 +205,59 @@ class Certificate(object):
 
 
 @attr.s
+class URLAndHash(object):
+    """
+    An object representing a URLAndHash struct.
+    """
+    url = attr.ib()
+    padding = attr.ib()
+    sha1_hash = attr.ib()
+
+
+@attr.s
+class CertificateURL(object):
+    """
+    An object representing a CertificateURL struct.
+    """
+    type = attr.ib()
+    url_and_hash_list = attr.ib()
+
+    def as_bytes(self):
+        return _constructs.CertificateURL.build(Container(
+            type=self.type,
+            url_and_hash_list=ListContainer(
+                Container(
+                    length=len(url_and_hash.url),
+                    url=url_and_hash.url,
+                    padding=url_and_hash.padding,
+                    sha1_hash=url_and_hash.sha1_hash,
+                )
+                for url_and_hash in self.url_and_hash_list
+            )
+        ))
+
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``CertificateURL`` struct.
+
+        :param bytes: the bytes representing the input.
+        :return: CertificateURL object.
+        """
+        construct = _constructs.CertificateURL.parse(bytes)
+        return cls(
+            type=construct.type,
+            url_and_hash_list=[
+                URLAndHash(
+                    url=url_and_hash.url,
+                    padding=url_and_hash.padding,
+                    sha1_hash=url_and_hash.sha1_hash,
+                )
+                for url_and_hash in construct.url_and_hash_list],
+        )
+
+
+@attr.s
 class Finished(object):
     verify_data = attr.ib()
 
@@ -230,7 +283,8 @@ class Handshake(object):
             enums.HandshakeType.CERTIFICATE_REQUEST,
             enums.HandshakeType.HELLO_REQUEST,
             enums.HandshakeType.SERVER_HELLO_DONE,
-            enums.HandshakeType.FINISHED
+            enums.HandshakeType.FINISHED,
+            enums.HandshakeType.CERTIFICATE_URL,
         ]:
             _body_as_bytes = self.body.as_bytes()
         else:
@@ -271,6 +325,8 @@ class Handshake(object):
                 CertificateRequest.from_bytes,
             #    15: parse_certificate_verify,
             #    16: parse_client_key_exchange,
+            enums.HandshakeType.CERTIFICATE_URL: CertificateURL.from_bytes,
+            #    22: parse certificate_status,
         }
 
         try:
@@ -282,7 +338,8 @@ class Handshake(object):
                 return Finished(verify_data=body)
             elif msg_type in [enums.HandshakeType.SERVER_KEY_EXCHANGE,
                               enums.HandshakeType.CERTIFICATE_VERIFY,
-                              enums.HandshakeType.CLIENT_KEY_EXCHANGE]:
+                              enums.HandshakeType.CLIENT_KEY_EXCHANGE,
+                              enums.HandshakeType.CERTIFICATE_STATUS]:
                 raise NotImplementedError
             else:
                 return _handshake_message_parser[msg_type](body)

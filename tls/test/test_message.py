@@ -10,12 +10,14 @@ import pytest
 
 from tls._common import enums
 
+from tls.exceptions import TLSValidationException
+
 from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 
 from tls.message import (ASN1Cert, Certificate, CertificateRequest,
-                         Finished, Handshake, HelloRequest,
-                         PreMasterSecret, ServerDHParams,
-                         ServerHelloDone)
+                         CertificateURL, Finished, Handshake, HelloRequest,
+                         PreMasterSecret, ServerDHParams, ServerHelloDone,
+                         URLAndHash)
 
 
 class TestCertificateRequestParsing(object):
@@ -283,6 +285,76 @@ class TestCertificateParsing(object):
             certificate.as_bytes()
 
 
+class TestCertificateURLParsing(object):
+    """
+    Tests for parsing of :py:class:`tls.message.CertificateURL` messages.
+    """
+    url_and_hash_list_bytes = (
+        b'\x00\x10'  # url length
+        b'cert.example.com'  # url
+        b'\x01'  # padding
+        b'abcdefghijklmnopqrst'  # SHA1Hash[20]
+    )
+
+    certificate_url_packet = (
+        b'\x00'  # CertChainType
+        b'\x00\x27'  # url_and_hash_list length
+    ) + url_and_hash_list_bytes
+
+    def test_parse_certificate_url(self):
+        """
+        :py:meth:`tls.message.CertificateURL.from_bytes` parses a valid
+        packet.
+        """
+        record = CertificateURL.from_bytes(self.certificate_url_packet)
+        assert isinstance(record, CertificateURL)
+        assert record.type == enums.CertChainType.INDIVIDUAL_CERTS
+        assert len(record.url_and_hash_list) == 1
+        assert record.url_and_hash_list[0].url == b'cert.example.com'
+        assert record.url_and_hash_list[0].padding == 1
+        assert record.url_and_hash_list[0].sha1_hash == b'abcdefghijklmnopqrst'
+
+    def test_incorrect_padding_parsing(self):
+        """
+        :py:meth:`tls._constructs.URLAndHash.parse` rejects a packet
+        whose ``padding`` is not 1.
+        """
+        bad_padding_bytes = (
+            b'\x00\x10'  # url length
+            b'cert.example.com'  # url
+            b'\x03'  # padding
+            b'abcdefghijklmnopqrst'  # SHA1Hash[20]
+        )
+
+        certificate_url_packet = (
+            b'\x00'  # CertChainType
+            b'\x00\x27'  # url_and_hash_list length
+        ) + bad_padding_bytes
+
+        with pytest.raises(TLSValidationException) as exc_info:
+            CertificateURL.from_bytes(certificate_url_packet)
+
+        assert exc_info.value.args == ('object failed validation', 3)
+
+    def test_as_bytes(self):
+        """
+        :py:meth:`tls.message.CertificateUrl.as_bytes` returns a valid
+        packet.
+        """
+        record = CertificateURL.from_bytes(self.certificate_url_packet)
+        assert record.as_bytes() == self.certificate_url_packet
+
+    def test_as_bytes_with_bad_padding(self):
+        """
+        :py:meth:`tls.message.CertificateURL.as_bytes` fails to serialize  a
+        record whose ``padding`` is not 1.
+        """
+        record = CertificateURL.from_bytes(self.certificate_url_packet)
+        record.url_and_hash_list[0].padding = 5
+        with pytest.raises(TLSValidationException):
+            record.as_bytes()
+
+
 class TestHandshakeStructParsing(object):
     """
     Tests for parsing of :py:class:`tls.messages.Handshake` structs.
@@ -387,6 +459,20 @@ class TestHandshakeStructParsing(object):
         b'some-encrypted-bytes'
     )
 
+    certificate_url_packet = (
+        b'\x00'  # CertChainType
+        b'\x00\x27'  # url_and_hash_list length
+        b'\x00\x10'  # url length
+        b'cert.example.com'  # url
+        b'\x01'  # padding
+        b'abcdefghijklmnopqrst'  # SHA1Hash[20]
+    )
+
+    certificate_url_handshake_packet = (
+        b'\x15'
+        b'\x00\x00\x2a'
+    ) + certificate_url_packet
+
     def test_parse_client_hello_in_handshake(self):
         record = Handshake.from_bytes(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
@@ -477,3 +563,29 @@ class TestHandshakeStructParsing(object):
     def test_as_bytes_finished(self):
         record = Handshake.from_bytes(self.finished_handshake)
         assert record.as_bytes() == self.finished_handshake
+
+    def test_from_bytes_certificate_url(self):
+        """
+        :py:class:`tls.messages.Handshake` parses a valid packet with a
+        ``CertificateURL`` message.
+        """
+        record = Handshake.from_bytes(self.certificate_url_handshake_packet)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == enums.HandshakeType.CERTIFICATE_URL
+        assert record.length == 42
+        assert isinstance(record.body, CertificateURL)
+        assert record.body.type == enums.CertChainType.INDIVIDUAL_CERTS
+        assert len(record.body.url_and_hash_list) == 1
+        assert isinstance(record.body.url_and_hash_list[0], URLAndHash)
+        assert record.body.url_and_hash_list[0].url == b'cert.example.com'
+        assert record.body.url_and_hash_list[0].padding == 1
+        assert (record.body.url_and_hash_list[0].sha1_hash ==
+                b'abcdefghijklmnopqrst')
+
+    def test_as_bytes_certificate_url(self):
+        """
+        :py:meth:`tls.message.Handshake.as_bytes` returns a valid packet when
+        the body contains a ``CertificateURL`` message.
+        """
+        record = Handshake.from_bytes(self.certificate_url_handshake_packet)
+        assert record.as_bytes() == self.certificate_url_handshake_packet

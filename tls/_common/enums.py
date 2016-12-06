@@ -45,6 +45,8 @@ class HandshakeType(Enum):
     CERTIFICATE_VERIFY = 15
     CLIENT_KEY_EXCHANGE = 16
     FINISHED = 20
+    CERTIFICATE_URL = 21
+    CERTIFICATE_STATUS = 22
 
 
 class ContentType(Enum):
@@ -132,3 +134,8 @@ class CompressionMethod(Enum):
 
 class NameType(Enum):
     HOST_NAME = 0
+
+
+class CertChainType(Enum):
+    INDIVIDUAL_CERTS = 0
+    PKIPATH = 1

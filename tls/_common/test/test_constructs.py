@@ -12,12 +12,13 @@ from construct.core import AdaptationError, Construct, Container
 
 import pytest
 
-from tls._common._constructs import (BytesAdapter, EnumClass,
-                                     EnumSwitch, Opaque,
-                                     PrefixedBytes, SizeAtLeast,
+from tls._common._constructs import (BytesAdapter, EnumClass, EnumSwitch,
+                                     Opaque, PrefixedBytes, SizeAtLeast,
                                      SizeAtMost, SizeWithin,
-                                     TLSPrefixedArray, UBInt24,
-                                     _UBInt24)
+                                     TLSExprValidator, TLSOneOf,
+                                     TLSPrefixedArray, UBInt24, _UBInt24)
+
+from tls.exceptions import TLSValidationException
 
 
 @pytest.mark.parametrize("byte,number", [
@@ -92,6 +93,111 @@ class TestBytesAdapter(object):
         :py:class:`bytes` as :py:class:`bytes`.
         """
         assert bytes_adapted._decode(value, context=object()) is value
+
+
+class TestTLSExprValidator(object):
+    """
+    Tests for :py:class:`tls._common._constructs.TLSExprValidator`.
+    """
+    @pytest.fixture
+    def data_class(self):
+        """
+        A :py:func:`construct.macros.UBInt8` construct that requires the
+        input value to be equal to 6.
+        """
+        return TLSExprValidator(UBInt8('input_byte'),
+                                lambda obj, ctx: obj == 6)
+
+    def test_parse_invalid(self, data_class):
+        """
+        :py:class:`tls.common._constructs.TLSExprValidator` raises a
+        ``TLSValidationException`` when parsing a value that does not
+        evaluate to the provided expression.
+        """
+        with pytest.raises(TLSValidationException):
+            data_class.parse(b'\xff')
+
+    def test_parse_valid(self, data_class):
+        """
+        :py:class:`tls.common._constructs.TLSExprValidator` parses a value
+        that evaluates to the provided expression.
+        """
+        assert data_class.parse(b'\x06') == 6
+
+    def test_build_invalid(self, data_class):
+        """
+        :py:class:`tls.common._constructs.TLSExprValidator` raises a
+        ``TLSValidationException`` when serializing a value that does not
+        evaluate to the provided expression.
+        """
+        with pytest.raises(TLSValidationException):
+            data_class.build(2)
+
+    def test_build_valid(self, data_class):
+        """
+        :py:class:`tls.common._construct.TLSExprValidator` successfully
+        serializes a value into bytes when it evaluates to the provided
+        expression.
+        """
+        assert data_class.build(6) == b'\x06'
+
+
+class TestTLSOneOf(object):
+    """
+    Tests for :py:meth:`tls._common._constructs.TLSOneOf`.
+    """
+
+    @pytest.fixture
+    def data_class(self):
+        """
+        A :py:func:`construct.macros.UBInt8` construct that requires the
+        input value to be equal to one of 1, 3, or 5.
+        """
+        return TLSOneOf(UBInt8('input'),
+                        [1, 3, 5])
+
+    def test_parse_invalid(self, data_class):
+        """
+        :py:meth:`tls.common._constructs.TLSOneOf` raises a
+        ``TLSValidationException`` when parsing a value that is not one of
+        the values in the provided list.
+        """
+        with pytest.raises(TLSValidationException):
+            data_class.parse(b'\xff')
+
+    @pytest.mark.parametrize('input_bytes,parsed_output', [
+        (b'\x01', 1),
+        (b'\x03', 3),
+        (b'\x05', 5),
+    ])
+    def test_parse_valid(self, data_class, input_bytes, parsed_output):
+        """
+        :py:meth:`tls.common._constructs.TLSOneOf` parses a value that
+        equals one of the values in the provided list.
+        """
+        assert data_class.parse(input_bytes) == parsed_output
+
+    def test_build_invalid(self, data_class):
+        """
+        :py:meth:`tls.common._constructs.TLSOneOf` raises a
+        ``TLSValidationException`` when serializing a value that is not one
+        of the values in the provided list.
+        """
+        with pytest.raises(TLSValidationException):
+            data_class.build(2)
+
+    @pytest.mark.parametrize('input,built_bytes', [
+        (1, b'\x01'),
+        (3, b'\x03'),
+        (5, b'\x05'),
+    ])
+    def test_build_valid(self, data_class, input, built_bytes):
+        """
+        :py:meth:`tls.common._construct.TLSOneOf` successfully serializes a
+        value into bytes when it evaluates to one of the values in the
+        provided list.
+        """
+        assert data_class.build(input) == built_bytes
 
 
 @pytest.mark.parametrize("bytestring,encoded", [

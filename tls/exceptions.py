@@ -5,9 +5,21 @@
 from __future__ import absolute_import, division, print_function
 
 
-class UnsupportedCipherException(Exception):
+class TLSException(Exception):
+    """
+    This is the root exception from which all other exceptions inherit.
+    Lower-level parsing code raises very specific exceptions that higher-level
+    code can catch with this exception.
+    """
+
+
+class UnsupportedCipherException(TLSException):
     pass
 
 
-class UnsupportedExtensionException(Exception):
+class UnsupportedExtensionException(TLSException):
+    pass
+
+
+class TLSValidationException(TLSException):
     pass

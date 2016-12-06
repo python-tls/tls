@@ -4,6 +4,8 @@
 
 from __future__ import absolute_import, division, print_function
 
+from construct import Container
+
 from construct.adapters import ValidationError
 
 import pytest
@@ -103,6 +105,17 @@ class TestClientHello(object):
     client_hello_packet_with_server_name_ext = common_client_hello_data + (
         b'\x00\x12'
     ) + server_name_extension_data
+
+    client_certificate_url_extension = (
+        b'\x00\x02'  # Extension Type: Server Certificate Type
+        b'\x00\x00'  # Length
+        b''  # Data
+    )
+
+    client_hello_packet_with_client_certificate_url_extension = (
+        common_client_hello_data +
+        b'\x00\x04'
+    ) + client_certificate_url_extension
 
     def test_resumption_no_extensions(self):
         """
@@ -218,6 +231,30 @@ class TestClientHello(object):
             ClientHello.from_bytes(
                 client_hello_packet
             )
+
+    def test_parse_client_certificate_url_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` parses a packet with
+        CLIENT_CERTIFICATE_URL extension.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_packet_with_client_certificate_url_extension
+        )
+        assert len(record.extensions) == 1
+        assert (record.extensions[0].type ==
+                enums.ExtensionType.CLIENT_CERTIFICATE_URL)
+        assert record.extensions[0].data == Container()
+
+    def test_as_bytes_client_certificate_url_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` serializes a message
+        containing the CLIENT_CERTIFICATE_URL extension.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_packet_with_client_certificate_url_extension
+        )
+        assert (record.as_bytes() ==
+                self.client_hello_packet_with_client_certificate_url_extension)
 
     def test_as_bytes_unsupported_extension(self):
         """

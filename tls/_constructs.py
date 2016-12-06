@@ -6,14 +6,16 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from construct import (Array, Bytes, Pass, Struct, Switch, UBInt16, UBInt32,
+from construct import (Array, Bytes, Pass, Struct,
+                       Switch, UBInt16, UBInt32,
                        UBInt8)
 
 from tls._common import enums
 
 from tls._common._constructs import (EnumClass, EnumSwitch, Opaque,
                                      PrefixedBytes, SizeAtLeast, SizeAtMost,
-                                     SizeWithin, TLSPrefixedArray, UBInt24)
+                                     SizeWithin, TLSOneOf, TLSPrefixedArray,
+                                     UBInt24)
 
 from tls.ciphersuites import CipherSuites
 
@@ -84,6 +86,11 @@ ServerName = Struct(
 
 ServerNameList = TLSPrefixedArray("server_name_list", ServerName)
 
+ClientCertificateURL = Struct(
+    "client_certificate_url",
+    # The "extension_data" field of this extension SHALL be empty.
+)
+
 SignatureAndHashAlgorithm = Struct(
     "algorithms",
     EnumClass(UBInt8("hash"), enums.HashAlgorithm),
@@ -106,6 +113,9 @@ Extension = Struct(
             enums.ExtensionType.SERVER_NAME: Opaque(ServerNameList),
             enums.ExtensionType.SIGNATURE_ALGORITHMS: Opaque(
                 SupportedSignatureAlgorithms
+            ),
+            enums.ExtensionType.CLIENT_CERTIFICATE_URL: Opaque(
+                ClientCertificateURL
             ),
         },
         default=Pass,
@@ -194,4 +204,19 @@ Alert = Struct(
     "Alert",
     UBInt8("level"),
     UBInt8("description"),
+)
+
+URLAndHash = Struct(
+    "url_and_hash",
+    SizeWithin(UBInt16("length"),
+               min_size=1, max_size=2 ** 16 - 1),
+    Bytes("url", lambda ctx: ctx.length),
+    TLSOneOf(UBInt8('padding'), [1]),
+    Bytes("sha1_hash", 20),
+)
+
+CertificateURL = Struct(
+    "CertificateURL",
+    EnumClass(UBInt8("type"), enums.CertChainType),
+    TLSPrefixedArray("url_and_hash_list", URLAndHash),
 )
