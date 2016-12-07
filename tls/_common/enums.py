@@ -139,3 +139,10 @@ class NameType(Enum):
 class CertChainType(Enum):
     INDIVIDUAL_CERTS = 0
     PKIPATH = 1
+
+
+class MaxFragmentLength(Enum):
+    TWO_TO_THE_9TH = 1
+    TWO_TO_THE_10TH = 2
+    TWO_TO_THE_11TH = 3
+    TWO_TO_THE_12TH = 4

@@ -103,6 +103,8 @@ SupportedSignatureAlgorithms = TLSPrefixedArray(
     length_validator=partial(SizeAtLeast, min_size=1),
 )
 
+MaxFragmentLength = EnumClass(UBInt8("size"), enums.MaxFragmentLength)
+
 Extension = Struct(
     "extensions",
     *EnumSwitch(
@@ -115,7 +117,10 @@ Extension = Struct(
                 SupportedSignatureAlgorithms
             ),
             enums.ExtensionType.CLIENT_CERTIFICATE_URL: Opaque(
-                ClientCertificateURL
+                ClientCertificateURL,
+            ),
+            enums.ExtensionType.MAX_FRAGMENT_LENGTH: Opaque(
+                MaxFragmentLength,
             ),
         },
         default=Pass,
