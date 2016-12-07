@@ -223,5 +223,10 @@ URLAndHash = Struct(
 CertificateURL = Struct(
     "CertificateURL",
     EnumClass(UBInt8("type"), enums.CertChainType),
-    TLSPrefixedArray("url_and_hash_list", URLAndHash),
+    TLSPrefixedArray(
+        "url_and_hash_list",
+        URLAndHash,
+        length_validator=partial(SizeWithin, min_size=1,
+                                 max_size=2 ** 16 - 1)
+    ),
 )

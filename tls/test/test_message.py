@@ -354,6 +354,19 @@ class TestCertificateURLParsing(object):
         with pytest.raises(TLSValidationException):
             record.as_bytes()
 
+    def test_url_and_hash_list_too_short(self):
+        """
+        :py:class:`tls._constructs.CertificateURL` rejects
+        a record where length of `url_and_hash_list` is
+        less than 1.
+        """
+        record = CertificateURL.from_bytes(self.certificate_url_packet)
+        record.url_and_hash_list = []
+        with pytest.raises(ValidationError) as exc_info:
+            record.as_bytes()
+
+        assert exc_info.value.args == ('invalid object', 0)
+
 
 class TestHandshakeStructParsing(object):
     """
