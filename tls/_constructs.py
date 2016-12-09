@@ -105,6 +105,10 @@ SupportedSignatureAlgorithms = TLSPrefixedArray(
 
 MaxFragmentLength = EnumClass(UBInt8("size"), enums.MaxFragmentLength)
 
+TruncatedHMAC = Struct(
+    "truncated_hmac"
+)
+
 Extension = Struct(
     "extensions",
     *EnumSwitch(
@@ -122,6 +126,7 @@ Extension = Struct(
             enums.ExtensionType.MAX_FRAGMENT_LENGTH: Opaque(
                 MaxFragmentLength,
             ),
+            enums.ExtensionType.TRUNCATED_HMAC: Opaque(TruncatedHMAC),
         },
         default=Pass,
     )

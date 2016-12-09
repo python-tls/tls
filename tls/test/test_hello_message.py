@@ -129,6 +129,16 @@ class TestClientHello(object):
         b'\x00\x04'
     ) + client_certificate_url_extension
 
+    truncated_hmac_ext_packet = (
+        b'\x00\x04'  # Extension Type: truncated_hmac
+        b'\x00\x00'  # extension_data length
+        b''  # extension_data data
+    )
+
+    client_hello_with_truncated_hmac_ext = common_client_hello_data + (
+        b'\x00\x04'
+    ) + truncated_hmac_ext_packet
+
     def test_resumption_no_extensions(self):
         """
         :func:`parse_client_hello` returns an instance of
@@ -245,6 +255,24 @@ class TestClientHello(object):
         assert record.as_bytes() == (
             self.client_hello_packet_with_maximum_fragment_length_ext)
 
+    def test_from_bytes_with_truncated_hmac_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` parses a packet with a
+        truncated_hmac extension.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_with_truncated_hmac_ext
+        )
+        assert len(record.extensions) == 1
+        assert record.extensions[0].type == enums.ExtensionType.TRUNCATED_HMAC
+        assert record.extensions[0].data == Container()
+
+    def test_as_bytes_with_truncated_hmac_extension(self):
+        record = ClientHello.from_bytes(
+            self.client_hello_with_truncated_hmac_ext
+        )
+        assert record.as_bytes() == self.client_hello_with_truncated_hmac_ext
+
     def test_hello_from_bytes_with_unsupported_extension(self):
         """
         :py:func:`tls.hello_message.ClientHello` does not parse a packet
@@ -348,6 +376,16 @@ class TestServerHello(object):
         b'\x00\x1a'  # extensions length
     ) + supported_signature_list_extension_data
 
+    truncated_hmac_ext_packet = (
+        b'\x00\x04'  # Extension Type: truncated_hmac
+        b'\x00\x00'  # extension_data length
+        b''  # extension_data data
+    )
+
+    server_hello_with_truncated_hmac_ext = common_server_hello_data + (
+        b'\x00\x04'
+    ) + truncated_hmac_ext_packet
+
     def test_parse_server_hello(self):
         """
         :func:`parse_server_hello` returns an instance of
@@ -422,3 +460,21 @@ class TestServerHello(object):
         record.extensions = extensions
         with pytest.raises(UnsupportedExtensionException):
             record.as_bytes()
+
+    def test_from_bytes_with_truncated_hmac_extension(self):
+        """
+        :py:func:`tls.hello_message.ServerHello` parses a packet with a
+        truncated_hmac extension.
+        """
+        record = ServerHello.from_bytes(
+            self.server_hello_with_truncated_hmac_ext
+        )
+        assert len(record.extensions) == 1
+        assert record.extensions[0].type == enums.ExtensionType.TRUNCATED_HMAC
+        assert record.extensions[0].data == Container()
+
+    def test_as_bytes_with_truncated_hmac_extension(self):
+        record = ServerHello.from_bytes(
+            self.server_hello_with_truncated_hmac_ext
+        )
+        assert record.as_bytes() == self.server_hello_with_truncated_hmac_ext

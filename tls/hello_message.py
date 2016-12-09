@@ -58,6 +58,7 @@ class ClientHello(object):
         enums.ExtensionType.MAX_FRAGMENT_LENGTH,
         enums.ExtensionType.CLIENT_CERTIFICATE_URL,
         enums.ExtensionType.SIGNATURE_ALGORITHMS,
+        enums.ExtensionType.TRUNCATED_HMAC,
         # XXX Incomplete list, needs to be populated as we implement more
         # extensions.
     ])
@@ -127,7 +128,9 @@ class ServerHello(object):
     cipher_suite = attr.ib()
     compression_method = attr.ib()
     extensions = attr.ib()
-    allowed_extensions = frozenset([])
+    allowed_extensions = frozenset([
+        enums.ExtensionType.TRUNCATED_HMAC,
+    ])
 
     def as_bytes(self):
         if any(extension.type not in self.allowed_extensions
