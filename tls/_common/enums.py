@@ -146,3 +146,7 @@ class MaxFragmentLength(Enum):
     TWO_TO_THE_10TH = 2
     TWO_TO_THE_11TH = 3
     TWO_TO_THE_12TH = 4
+
+
+class CertificateStatusType(Enum):
+    OCSP = 1

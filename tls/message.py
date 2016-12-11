@@ -258,6 +258,36 @@ class CertificateURL(object):
 
 
 @attr.s
+class CertificateStatus(object):
+    """
+    An object representing a CertificateStatus struct
+    """
+    status_type = attr.ib()
+    response = attr.ib()
+
+    def as_bytes(self):
+        return _constructs.CertificateStatus.build(Container(
+            status_type=self.status_type,
+            response=self.response,
+        ))
+
+    @classmethod
+    def from_bytes(cls, bytes):
+        """
+        Parse a ``CertificateStatus`` struct.
+
+        :param bytes: bytes representing the input
+        :return: CertificateStatus instance.
+        """
+        construct = _constructs.CertificateStatus.parse(bytes)
+
+        return cls(
+            status_type=construct.status_type,
+            response=construct.response,
+        )
+
+
+@attr.s
 class Finished(object):
     verify_data = attr.ib()
 
@@ -285,6 +315,7 @@ class Handshake(object):
             enums.HandshakeType.SERVER_HELLO_DONE,
             enums.HandshakeType.FINISHED,
             enums.HandshakeType.CERTIFICATE_URL,
+            enums.HandshakeType.CERTIFICATE_STATUS,
         ]:
             _body_as_bytes = self.body.as_bytes()
         else:
@@ -326,7 +357,8 @@ class Handshake(object):
             #    15: parse_certificate_verify,
             #    16: parse_client_key_exchange,
             enums.HandshakeType.CERTIFICATE_URL: CertificateURL.from_bytes,
-            #    22: parse certificate_status,
+            enums.HandshakeType.CERTIFICATE_STATUS:
+                CertificateStatus.from_bytes,
         }
 
         try:
@@ -338,8 +370,7 @@ class Handshake(object):
                 return Finished(verify_data=body)
             elif msg_type in [enums.HandshakeType.SERVER_KEY_EXCHANGE,
                               enums.HandshakeType.CERTIFICATE_VERIFY,
-                              enums.HandshakeType.CLIENT_KEY_EXCHANGE,
-                              enums.HandshakeType.CERTIFICATE_STATUS]:
+                              enums.HandshakeType.CLIENT_KEY_EXCHANGE]:
                 raise NotImplementedError
             else:
                 return _handshake_message_parser[msg_type](body)

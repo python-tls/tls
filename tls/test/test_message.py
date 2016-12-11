@@ -15,9 +15,9 @@ from tls.exceptions import TLSValidationException
 from tls.hello_message import ClientHello, ProtocolVersion, ServerHello
 
 from tls.message import (ASN1Cert, Certificate, CertificateRequest,
-                         CertificateURL, Finished, Handshake, HelloRequest,
-                         PreMasterSecret, ServerDHParams, ServerHelloDone,
-                         URLAndHash)
+                         CertificateStatus, CertificateURL, Finished,
+                         Handshake, HelloRequest, PreMasterSecret,
+                         ServerDHParams, ServerHelloDone, URLAndHash)
 
 
 class TestCertificateRequestParsing(object):
@@ -368,9 +368,39 @@ class TestCertificateURLParsing(object):
         assert exc_info.value.args == ('invalid object', 0)
 
 
+class TestCertificateStatusParsing(object):
+    """
+    Tests for parsing of
+    :py:class:`tls.message.CertificateStatus` structs.
+    """
+    certificate_status = (
+        b'\x01'  # status_type
+        b'\x00\x00\x05'  # response length
+        b'12345'  # response
+    )
+
+    def test_from_bytes(self):
+        """
+        :py:meth:`tls.message.CertificateStatus.from_bytes` parses a valid
+        packet.
+        """
+        record = CertificateStatus.from_bytes(self.certificate_status)
+        assert isinstance(record, CertificateStatus)
+        assert record.status_type == enums.CertificateStatusType.OCSP
+        assert record.response == b'12345'
+
+    def test_as_bytes(self):
+        """
+        :py:meth:`tls.message.CertificateStatus.as_bytes` returns the bytes it
+        was created with.
+        """
+        record = CertificateStatus.from_bytes(self.certificate_status)
+        assert record.as_bytes() == self.certificate_status
+
+
 class TestHandshakeStructParsing(object):
     """
-    Tests for parsing of :py:class:`tls.messages.Handshake` structs.
+    Tests for parsing of :py:class:`tls.message.Handshake` structs.
     """
     supported_signature_list_extension_data = (
         b'\x00\x0D'  # extensions[0].extension_type
@@ -486,6 +516,17 @@ class TestHandshakeStructParsing(object):
         b'\x00\x00\x2a'
     ) + certificate_url_packet
 
+    certificate_status = (
+        b'\x01'  # status_type
+        b'\x00\x00\x05'  # response length
+        b'12345'  # response
+    )
+
+    certificate_status_handshake = (
+        b'\x16'  # handshake msg type
+        b'\x00\x00\x09'  # handshake body length
+    ) + certificate_status
+
     def test_parse_client_hello_in_handshake(self):
         record = Handshake.from_bytes(self.client_hello_handshake_packet)
         assert isinstance(record, Handshake)
@@ -579,7 +620,7 @@ class TestHandshakeStructParsing(object):
 
     def test_from_bytes_certificate_url(self):
         """
-        :py:class:`tls.messages.Handshake` parses a valid packet with a
+        :py:class:`tls.message.Handshake` parses a valid packet with a
         ``CertificateURL`` message.
         """
         record = Handshake.from_bytes(self.certificate_url_handshake_packet)
@@ -602,3 +643,24 @@ class TestHandshakeStructParsing(object):
         """
         record = Handshake.from_bytes(self.certificate_url_handshake_packet)
         assert record.as_bytes() == self.certificate_url_handshake_packet
+
+    def test_from_bytes_certificate_status(self):
+        """
+        :py:class:`tls.message.Handshake` parses a valid packet with
+        ``CertificateStatus`` message.
+        """
+        record = Handshake.from_bytes(self.certificate_status_handshake)
+        assert isinstance(record, Handshake)
+        assert record.msg_type == enums.HandshakeType.CERTIFICATE_STATUS
+        assert record.length == 9
+        assert isinstance(record.body, CertificateStatus)
+        assert record.body.status_type == enums.CertificateStatusType.OCSP
+        assert record.body.response == b'12345'
+
+    def test_as_bytes_certificate_status(self):
+        """
+        :py:class:`tls.message.Handshake` serializes a record containing a
+        ``CertificateStatus`` message.
+        """
+        record = Handshake.from_bytes(self.certificate_status_handshake)
+        assert record.as_bytes() == self.certificate_status_handshake

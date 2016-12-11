@@ -235,3 +235,19 @@ CertificateURL = Struct(
                                  max_size=2 ** 16 - 1)
     ),
 )
+
+OCSPResponse = PrefixedBytes("ocsp_response",
+                             SizeWithin(UBInt24("length"),
+                                        min_size=1, max_size=2 ** 24 - 1))
+
+CertificateStatus = Struct(
+    "certificate_status",
+    *EnumSwitch(
+        type_field=UBInt8("status_type"),
+        type_enum=enums.CertificateStatusType,
+        value_field="response",
+        value_choices={
+            enums.CertificateStatusType.OCSP: OCSPResponse,
+        },
+    )
+)
