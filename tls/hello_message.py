@@ -60,6 +60,7 @@ class ClientHello(object):
         enums.ExtensionType.SIGNATURE_ALGORITHMS,
         enums.ExtensionType.TRUNCATED_HMAC,
         enums.ExtensionType.TRUSTED_CA_KEYS,
+        enums.ExtensionType.STATUS_REQUEST,
         # XXX Incomplete list, needs to be populated as we implement more
         # extensions.
     ])

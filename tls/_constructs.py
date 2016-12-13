@@ -107,6 +107,7 @@ MaxFragmentLength = EnumClass(UBInt8("size"), enums.MaxFragmentLength)
 
 TruncatedHMAC = Struct(
     "truncated_hmac"
+    # The "extension_data" field of this extension SHALL be empty.
 )
 
 SHA1Hash = Bytes("sha1_hash", 20)
@@ -135,8 +136,37 @@ TrustedAuthority = Struct(
 TrustedAuthorities = TLSPrefixedArray("trusted_authorities_list",
                                       TrustedAuthority)
 
+ResponderID = PrefixedBytes("responder_id",
+                            SizeWithin(UBInt16("length"),
+                                       min_size=1, max_size=2 ** 16 - 1))
+
+RequestExtensions = PrefixedBytes("request_extensions",
+                                  SizeAtMost(UBInt16("length"),
+                                             max_size=2 ** 16 - 1))
+
+OCSPStatusRequest = Struct(
+    "ocsp_status_request",
+    TLSPrefixedArray("responder_id_list",
+                     ResponderID,
+                     length_validator=partial(SizeAtMost,
+                                              max_size=2 ** 16 - 1)),
+    RequestExtensions,
+)
+
+CertificateStatusRequest = Struct(
+    "certificate_status_request",
+    *EnumSwitch(
+        type_field=UBInt8("status_type"),
+        type_enum=enums.CertificateStatusType,
+        value_field="request",
+        value_choices={
+            enums.CertificateStatusType.OCSP: OCSPStatusRequest,
+        },
+    )
+)
+
 Extension = Struct(
-    "extensions",
+    "extension",
     *EnumSwitch(
         type_field=UBInt16("type"),
         type_enum=enums.ExtensionType,
@@ -154,6 +184,9 @@ Extension = Struct(
             ),
             enums.ExtensionType.TRUNCATED_HMAC: Opaque(TruncatedHMAC),
             enums.ExtensionType.TRUSTED_CA_KEYS: Opaque(TrustedAuthorities),
+            enums.ExtensionType.STATUS_REQUEST: Opaque(
+                CertificateStatusRequest
+            ),
         },
         default=Pass,
     )

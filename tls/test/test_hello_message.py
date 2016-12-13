@@ -151,6 +151,35 @@ class TestClientHello(object):
         b'\x00\x1b'
     ) + trusted_ca_keys_ext
 
+    cert_status_request_ext = (
+        b'\x00\x05'  # Ext type : status_request
+        b'\x00\x11'  # Extension_data len
+        b'\x01'  # Status type: OCSP
+        b'\x00\x09'  # responder ID List length
+        b'\x00\x02'  # responder_id_list[0] len
+        b'12'  # responder_id_list[0] value
+        b'\x00\x03'  # responder_id_list[0] len
+        b'345'  # responder_id_list[0] value
+        b'\x00\x03'  # request extensions length
+        b'678'  # request extensions
+    )
+
+    client_hello_with_cert_status_ext = common_client_hello_data + (
+        b'\x00\x15'
+    ) + cert_status_request_ext
+
+    cert_status_request_zero_ext = (
+        b'\x00\x05'  # Ext type : status_request
+        b'\x00\x05'  # Extension_data len
+        b'\x01'  # Status type: OCSP
+        b'\x00\x00'  # responder ID List length
+        b'\x00\x00'  # request extensions length
+    )
+
+    client_hello_with_status_req_zero_ext = common_client_hello_data + (
+        b'\x00\x09'
+    ) + cert_status_request_zero_ext
+
     def test_resumption_no_extensions(self):
         """
         :func:`parse_client_hello` returns an instance of
@@ -360,7 +389,7 @@ class TestClientHello(object):
 
     def test_as_bytes_unsupported_extension(self):
         """
-        :func:`ClientHello.as_bytes` fails to serialize a message that
+        :py:func:`ClientHello.as_bytes` fails to serialize a message that
         contains invalid extensions
         """
         extensions_data = (
@@ -375,6 +404,55 @@ class TestClientHello(object):
         record.extensions = extensions
         with pytest.raises(UnsupportedExtensionException):
             record.as_bytes()
+
+    def test_from_bytes_cert_status_request_zero_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello.from_bytes` parses a packet
+        with STATUS_REQUEST extension with zero length responder_id_list and
+        request_extensions.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_with_status_req_zero_ext
+        )
+        assert len(record.extensions) == 1
+        assert record.extensions[0].type == enums.ExtensionType.STATUS_REQUEST
+        extension_data = record.extensions[0].data
+        assert extension_data.status_type == enums.CertificateStatusType.OCSP
+        assert extension_data.request.responder_id_list == []
+        assert extension_data.request.request_extensions == b''
+
+    def test_as_bytes_cert_status_request_zero_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello.as_bytes` serializes a message
+        containing the STATUS_REQUEST extension with zero length
+        responder_id_list and request_extensions.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_with_status_req_zero_ext
+        )
+        assert record.as_bytes() == self.client_hello_with_status_req_zero_ext
+
+    def test_from_bytes_cert_status_request_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello.from_bytes` parses a packet
+        with STATUS_REQUEST extension.
+        """
+        record = ClientHello.from_bytes(self.client_hello_with_cert_status_ext)
+
+        assert len(record.extensions) == 1
+        assert record.extensions[0].type == enums.ExtensionType.STATUS_REQUEST
+        extension_data = record.extensions[0].data
+        assert extension_data.status_type == enums.CertificateStatusType.OCSP
+        assert extension_data.request.responder_id_list == [b'12', b'345']
+        assert extension_data.request.request_extensions == b'678'
+
+    def test_as_bytes_cert_status_request_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello.as_bytes` serializes a message
+        containing the STATUS_REQUEST extension.
+        """
+        record = ClientHello.from_bytes(self.client_hello_with_cert_status_ext)
+        assert record.as_bytes() == self.client_hello_with_cert_status_ext
 
 
 class TestServerHello(object):
