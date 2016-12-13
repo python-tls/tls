@@ -150,3 +150,10 @@ class MaxFragmentLength(Enum):
 
 class CertificateStatusType(Enum):
     OCSP = 1
+
+
+class TrustedAuthorityIdentifierType(Enum):
+    PRE_AGREED = 0
+    KEY_SHA1_HASH = 1
+    X509_NAME = 2
+    CERT_SHA1_HASH = 3

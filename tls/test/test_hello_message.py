@@ -139,6 +139,18 @@ class TestClientHello(object):
         b'\x00\x04'
     ) + truncated_hmac_ext_packet
 
+    trusted_ca_keys_ext = (
+        b'\x00\x03'  # Extension Type: trusted_ca_keys
+        b'\x00\x17'  # extension_data length
+        b'\x00\x15'  # TrustedAuthorities length
+        b'\x01'      # TrustedAuthority identifier_type SHA1Hash
+        b'aaaaaaaaaaaaaaaaaaaa'  # SHA1Hash value
+    )
+
+    client_hello_with_trusted_ca_keys_ext = common_client_hello_data + (
+        b'\x00\x1b'
+    ) + trusted_ca_keys_ext
+
     def test_resumption_no_extensions(self):
         """
         :func:`parse_client_hello` returns an instance of
@@ -316,6 +328,35 @@ class TestClientHello(object):
         )
         assert (record.as_bytes() ==
                 self.client_hello_packet_with_client_certificate_url_extension)
+
+    def test_parse_trusted_ca_keys_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` parses a packet with
+        TRUSTED_CA_KEYS_EXT extension.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_with_trusted_ca_keys_ext
+        )
+        assert len(record.extensions) == 1
+        assert (record.extensions[0].type ==
+                enums.ExtensionType.TRUSTED_CA_KEYS)
+
+        extension_data = record.extensions[0].data
+        assert extension_data == [Container(
+            identifier_type=enums.TrustedAuthorityIdentifierType.KEY_SHA1_HASH,
+            identifier=b'a' * 20,
+        )]
+
+    def test_as_bytes_trusted_ca_keys_extension(self):
+        """
+        :py:func:`tls.hello_message.ClientHello` serializes a message
+        containing the TRUSTED_CA_KEYS extension.
+        """
+        record = ClientHello.from_bytes(
+            self.client_hello_with_trusted_ca_keys_ext
+        )
+        assert (record.as_bytes() ==
+                self.client_hello_with_trusted_ca_keys_ext)
 
     def test_as_bytes_unsupported_extension(self):
         """

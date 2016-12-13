@@ -109,6 +109,32 @@ TruncatedHMAC = Struct(
     "truncated_hmac"
 )
 
+SHA1Hash = Bytes("sha1_hash", 20)
+
+DistinguishedName = PrefixedBytes(
+    "DistinguishedName",
+    SizeWithin(UBInt16("DistinguishedName_length"),
+               min_size=1, max_size=2 ** 16 - 1),
+)
+
+TrustedAuthority = Struct(
+    "trusted_authority",
+    *EnumSwitch(
+        type_field=UBInt8("identifier_type"),
+        type_enum=enums.TrustedAuthorityIdentifierType,
+        value_field="identifier",
+        value_choices={
+            enums.TrustedAuthorityIdentifierType.PRE_AGREED: Struct(None),
+            enums.TrustedAuthorityIdentifierType.KEY_SHA1_HASH: SHA1Hash,
+            enums.TrustedAuthorityIdentifierType.X509_NAME: DistinguishedName,
+            enums.TrustedAuthorityIdentifierType.CERT_SHA1_HASH: SHA1Hash,
+        }
+    )
+)
+
+TrustedAuthorities = TLSPrefixedArray("trusted_authorities_list",
+                                      TrustedAuthority)
+
 Extension = Struct(
     "extensions",
     *EnumSwitch(
@@ -127,6 +153,7 @@ Extension = Struct(
                 MaxFragmentLength,
             ),
             enums.ExtensionType.TRUNCATED_HMAC: Opaque(TruncatedHMAC),
+            enums.ExtensionType.TRUSTED_CA_KEYS: Opaque(TrustedAuthorities),
         },
         default=Pass,
     )
@@ -222,7 +249,7 @@ URLAndHash = Struct(
                min_size=1, max_size=2 ** 16 - 1),
     Bytes("url", lambda ctx: ctx.length),
     TLSOneOf(UBInt8('padding'), [1]),
-    Bytes("sha1_hash", 20),
+    SHA1Hash,
 )
 
 CertificateURL = Struct(
