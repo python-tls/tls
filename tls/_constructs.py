@@ -251,14 +251,14 @@ PreMasterSecret = Struct(
 
 ASN1Cert = Struct(
     "ASN1Cert",
-    SizeWithin(UBInt32("length"),
+    SizeWithin(UBInt24("length"),
                min_size=1, max_size=2 ** 24 - 1),
     Bytes("asn1_cert", lambda ctx: ctx.length),
 )
 
 Certificate = Struct(
     "Certificate",
-    SizeWithin(UBInt32("certificates_length"),
+    SizeWithin(UBInt24("certificates_length"),
                min_size=1, max_size=2 ** 24 - 1),
     Bytes("certificates_bytes", lambda ctx: ctx.certificates_length),
 )

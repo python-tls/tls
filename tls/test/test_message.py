@@ -181,7 +181,7 @@ class TestASN1CertificateSerialization(object):
         packet.
         """
         packet = (
-            b'\x00\x00\x00\x03'     # length
+            b'\x00\x00\x03'     # length
             b'ABC'                  # asn1_cert
         )
         assert ASN1Cert(asn1_cert=b"ABC").as_bytes() == packet
@@ -210,21 +210,15 @@ class TestCertificateParsing(object):
     Tests for parsing of :py:class:`tls.message.Certificate` messages.
     """
     packet = (
-        b'\x00\x00\x00\x07'  # certificate_length
-        b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
+        b'\x00\x00\x06'  # certificate_length
+        b'\x00\x00\x03'  # certificate_list.asn1_cert length
         b'ABC'  # certificate_list.asn1_cert
     )
 
     certificates_too_short = (
-        b'\x00\x00\x00\x00'  # certificate_length
+        b'\x00\x00\x00'  # certificate_length
         b''  # certificate_list.asn1_cert length
         b''  # certificate_list.asn1_cert
-    )
-
-    certificates_too_long = (
-        b'\x01\x00\x00\x04'  # certificate_length
-        b'\x01\x00\x00\x00' +  # certificate_list.asn1_cert length
-        (b'a' * 0x1000000)  # certificate_list.asn1_cert
     )
 
     def test_parse_certificate(self):
@@ -252,14 +246,6 @@ class TestCertificateParsing(object):
         """
         with pytest.raises(ValidationError):
             Certificate.from_bytes(self.certificates_too_short)
-
-    def test_parse_certificate_too_long(self):
-        """
-        :py:meth:`tls.message.Certificate.from_bytes` rejects a packet
-        whose ``certificate_list`` is too long.
-        """
-        with pytest.raises(ValidationError):
-            Certificate.from_bytes(self.certificates_too_long)
 
     def test_as_bytes_too_short(self):
         """
@@ -453,14 +439,14 @@ class TestHandshakeStructParsing(object):
     ) + server_hello_packet
 
     certificate_packet = (
-        b'\x00\x00\x00\x07'  # certificate_length
-        b'\x00\x00\x00\x03'  # certificate_list.asn1_cert length
+        b'\x00\x00\x06'  # certificate_length
+        b'\x00\x00\x03'  # certificate_list.asn1_cert length
         b'ABC'  # certificate_list.asn1_cert
     )
 
     certificate_handshake_packet = (
         b'\x0B'
-        b'\x00\x00\x0b'
+        b'\x00\x00\x09'
     ) + certificate_packet
 
     certificate_request_packet = (
@@ -554,7 +540,7 @@ class TestHandshakeStructParsing(object):
         record = Handshake.from_bytes(self.certificate_handshake_packet)
         assert isinstance(record, Handshake)
         assert record.msg_type == enums.HandshakeType.CERTIFICATE
-        assert record.length == 11
+        assert record.length == 9
         assert isinstance(record.body, Certificate)
 
     def test_parse_hello_request(self):
