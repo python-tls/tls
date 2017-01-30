@@ -73,7 +73,8 @@ def PrefixedBytes(name, length_field=construct.UBInt8("length")):  # noqa
     )
 
 
-def TLSPrefixedArray(name, subcon, length_validator=None):  # noqa
+def TLSPrefixedArray(name, subcon, length_validator=None,  # noqa
+                     length_field_size=construct.UBInt16):
     """
     The `TLS vector type`_.  It specializes on another
     :py:class:`construct.Construct` and then encodes or decodes an
@@ -93,12 +94,17 @@ def TLSPrefixedArray(name, subcon, length_validator=None):  # noqa
         construct of the array as its only argument and returns a
         :py:class:`construct.adapters.Validator`
 
+    :param length_field_size: (optional) The prefixed length field for
+        representing the array length. Defaults to
+        :py:func:`construct.macros.UBInt16`.
+    :type length_field_size: a :py:class:`construct.core.FormatField`
+
     ..  _TLS vector type:
         https://tools.ietf.org/html/rfc5246#section-4.3
     """
     # This needs a name so that PrefixedBytes' length function can
     # retrieve it
-    length_field = construct.UBInt16(name + "_length")
+    length_field = length_field_size(name + "_length")
 
     if length_validator is not None:
         length_field = length_validator(length_field)
