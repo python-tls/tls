@@ -251,16 +251,18 @@ PreMasterSecret = Struct(
 
 ASN1Cert = Struct(
     "ASN1Cert",
-    SizeWithin(UBInt24("length"),
-               min_size=1, max_size=2 ** 24 - 1),
-    Bytes("asn1_cert", lambda ctx: ctx.length),
+    PrefixedBytes("asn1_cert", SizeWithin(UBInt24("length"), min_size=1,
+                                          max_size=2 ** 24 - 1))
 )
 
+# https://tools.ietf.org/html/rfc5246#section-7.4.2
 Certificate = Struct(
     "Certificate",
-    SizeWithin(UBInt24("certificates_length"),
-               min_size=1, max_size=2 ** 24 - 1),
-    Bytes("certificates_bytes", lambda ctx: ctx.certificates_length),
+    TLSPrefixedArray("certificate_list",
+                     ASN1Cert,
+                     length_validator=partial(SizeWithin, min_size=1,
+                                              max_size=2 ** 24 - 1),
+                     length_field_size=UBInt24),
 )
 
 Handshake = Struct(

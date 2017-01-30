@@ -8,8 +8,6 @@ import attr
 
 from construct import Container, ListContainer
 
-from six import BytesIO
-
 from tls import _constructs
 
 from tls._common import enums
@@ -171,12 +169,8 @@ class Certificate(object):
 
     def as_bytes(self):
         return _constructs.Certificate.build(Container(
-            certificates_length=sum([3 + len(asn1cert.asn1_cert)
-                                     for asn1cert in self.certificate_list]),
-            certificates_bytes=b''.join(
-                [asn1cert.as_bytes() for asn1cert in self.certificate_list]
-            )
-
+            certificate_list=[Container(asn1_cert=cert.asn1_cert)
+                              for cert in self.certificate_list]
         ))
 
     @classmethod
@@ -188,19 +182,12 @@ class Certificate(object):
         :return: Certificate object.
         """
         construct = _constructs.Certificate.parse(bytes)
-        # XXX: Find a better way to parse an array of variable-length objects
-        certificates = []
-        certificates_io = BytesIO(construct.certificates_bytes)
-
-        while certificates_io.tell() < construct.certificates_length:
-            certificate_construct = _constructs.ASN1Cert.parse_stream(
-                certificates_io
-            )
-            certificates.append(
-                ASN1Cert(asn1_cert=certificate_construct.asn1_cert)
-            )
         return cls(
-            certificate_list=certificates
+            certificate_list=[
+                ASN1Cert(
+                    asn1_cert=asn1cert.asn1_cert
+                )
+                for asn1cert in construct.certificate_list],
         )
 
 
