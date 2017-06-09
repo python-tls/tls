@@ -1,18 +1,18 @@
 language: python
 sudo: false
+dist: trusty
 
 matrix:
     include:
         - python: 2.7
           env: TOXENV=py27
-        - python: 3.3
-          env: TOXENV=py33
         - python: 3.4
           env: TOXENV=py34
         - python: 3.5
           env: TOXENV=py35
-        - python: pypy
-          env: TOXENV=pypy
+        - python: 3.6
+          env: TOXENV=py36
+        - env: TOXENV=pypy
         - python: 2.7
           env: TOXENV=docs
           addons:
@@ -21,7 +21,7 @@ matrix:
                       - libenchant-dev
         - python: 2.7
           env: TOXENV=pep8
-        - python: 3.4
+        - python: 3.6
           env: TOXENV=py3pep8
 
 install:
@@ -29,12 +29,13 @@ install:
     - |
         if [ "${TOXENV}" == "pypy" ]
         then
+            rm -rf ~/.pyenv
             git clone --depth 1 https://github.com/yyuu/pyenv.git ~/.pyenv
             PYENV_ROOT="$HOME/.pyenv"
             PATH="$PYENV_ROOT/bin:$PATH"
             eval "$(pyenv init -)"
-            pyenv install pypy-4.0.1
-            pyenv global pypy-4.0.1
+            pyenv install pypy-5.7.0
+            pyenv global pypy-5.7.0
         fi
 
 script:
