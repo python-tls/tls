@@ -1,11 +1,11 @@
 tls
 ===
 
-.. image:: https://travis-ci.org/pyca/tls.svg?branch=master
-    :target: https://travis-ci.org/pyca/tls
+.. image:: https://travis-ci.org/python-tls/tls.svg?branch=master
+    :target: https://travis-ci.org/python-tls/tls
 
-.. image:: https://coveralls.io/repos/pyca/tls/badge.svg?branch=master
-    :target: https://coveralls.io/r/pyca/tls?branch=master
+.. image:: https://coveralls.io/repos/python-tls/tls/badge.svg?branch=master
+    :target: https://coveralls.io/r/python-tls/tls?branch=master
 
 
 Introduction
@@ -16,8 +16,7 @@ provide communication security over the Internet.
 
 This is an open source Python implementation of `TLS 1.2`_, using the `Python
 Cryptographic Authority's (PyCA's) Cryptography`_ libraries for all
-cryptographic primitives (e.g. ``AES``, ``RSA``, etc.). This project is part of
-PyCA's efforts to standardize and improve crypto libraries in Python.
+cryptographic primitives (e.g. ``AES``, ``RSA``, etc.).
 
 This project is not yet complete; see the "Current Status" section below for
 details.
@@ -103,19 +102,19 @@ use, once the implementation is more complete.
 Acknowledgements
 ================
 
-PyCA's TLS was being developed as one of the projects under `Stripe's Open
+Python-TLS was being developed as one of the projects under `Stripe's Open
 Source Retreat`_ by Ashwini Oruganti. It also includes code and reviews from
-other members of the PyCA community.
+members of the PyCA community.
 
 
 Discussion
 ==========
 
-You can join #cryptography-dev on Freenode to ask questions or get involved.
+You can join #python-tls on Freenode to ask questions or get involved.
 
 .. _`Python Cryptographic Authority's`: https://github.com/pyca
 .. _`Python Cryptographic Authority's (PyCA's) Cryptography`: https://cryptography.io/
 .. _`TLS 1.2`: http://tools.ietf.org/html/rfc5246
-.. _`here`: https://github.com/pyca/tls/blob/master/docs/_notes/tls-handshake.rst
+.. _`here`: https://github.com/python-tls/tls/blob/master/docs/_notes/tls-handshake.rst
 .. _`found here`: https://gist.github.com/ashfall/b9176874aabaafd8ce56
 .. _`Stripe's Open Source Retreat`: https://stripe.com/blog/stripe-open-source-retreat

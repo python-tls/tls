@@ -41,7 +41,7 @@ install:
 script:
     - tox
     - |
-        SPELLING_OUTPUT=/home/travis/build/pyca/tls/docs/_build/html/output.txt
+        SPELLING_OUTPUT=/home/travis/build/python-tls/tls/docs/_build/html/output.txt
         if [ -f $SPELLING_OUTPUT ]
         then
             cat $SPELLING_OUTPUT
