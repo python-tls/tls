@@ -6,9 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from functools import partial
 
-from construct import (Array, Bytes, Pass, Struct,
-                       Switch, UBInt16, UBInt32,
-                       UBInt8)
+from construct import Array, Bytes, Pass, Struct, UBInt16, UBInt32, UBInt8
 
 from tls._common import enums
 
@@ -74,12 +72,12 @@ HostName = PrefixedBytes("hostname", UBInt16("length"))
 
 ServerName = Struct(
     "server_name",
-    EnumClass(UBInt8("name_type"), enums.NameType),
-    Switch(
-        "name",
-        lambda ctx: ctx.name_type,
-        {
-            enums.NameType.HOST_NAME: HostName
+    *EnumSwitch(
+        type_field=UBInt8("name_type"),
+        type_enum=enums.NameType,
+        value_field="name",
+        value_choices={
+            enums.NameType.HOST_NAME: HostName,
         }
     )
 )
